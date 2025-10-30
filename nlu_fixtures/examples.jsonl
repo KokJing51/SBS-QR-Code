@@ -1,0 +1,11 @@
+{"text":"Book haircut Fri 3pm with Aida","intent":"make_booking","entities":{"service":"haircut","date":"fri","time":"3pm","staff":"aida"}}
+{"text":"I want a color tomorrow at 10","intent":"make_booking","entities":{"service":"color","date":"tomorrow","time":"10"}}
+{"text":"Book trim on Saturday evening","intent":"make_booking","entities":{"service":"haircut","date":"sat","time":null}}
+{"text":"reschedule to Mon 2pm","intent":"reschedule","entities":{"date":"mon","time":"2pm"}}
+{"text":"cancel my booking","intent":"cancel","entities":{}}
+{"text":"Book wash this Sun","intent":"make_booking","entities":{"service":"wash","date":"sun","time":null}}
+{"text":"Change to Tuesday 4:30","intent":"reschedule","entities":{"date":"tue","time":"4:30"}}
+{"text":"yes","intent":"confirm","entities":{}}
+{"text":"book colour next fri evening","intent":"make_booking","entities":{"service":"color","date":"next fri","time":null}}
+{"text":"book haircut","intent":"make_booking","entities":{"service":"haircut"}}
+

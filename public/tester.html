@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Mock WhatsApp Tester</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; max-width: 700px; margin: 24px auto; }
+    .row { display: flex; gap: 8px; margin-bottom: 8px; }
+    textarea { width: 100%; height: 80px; }
+    .log { border: 1px solid #ddd; padding: 12px; min-height: 160px; white-space: pre-wrap; background: #fafafa; }
+    input { padding: 6px; }
+    button { padding: 8px 12px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Mock WhatsApp Tester</h1>
+  <div class="row">
+    <label>From (phone):</label>
+    <input id="from" value="+60123456789" />
+  </div>
+  <div class="row">
+    <textarea id="text" placeholder="Type a message, e.g. 'Book Haircut Fri 3pm with Aida'"></textarea>
+  </div>
+  <div class="row">
+    <button id="send">Send</button>
+    <button id="sample1">Sample: Book</button>
+    <button id="sample2">Sample: Cancel</button>
+  </div>
+  <h3>Responses</h3>
+  <div id="log" class="log"></div>
+
+  <script>
+    const $from = document.getElementById('from');
+    const $text = document.getElementById('text');
+    const $log  = document.getElementById('log');
+
+    function appendLog(label, obj){
+      const time = new Date().toLocaleTimeString();
+      $log.textContent += `[${time}] ${label}:\n` + JSON.stringify(obj, null, 2) + "\n\n";
+      $log.scrollTop = $log.scrollHeight;
+    }
+
+    async function send(){
+      const body = { from: $from.value, text: $text.value };
+      appendLog("You", body);
+      const res = await fetch('/wa/webhook', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify(body)
+      });
+      const json = await res.json();
+      appendLog("Bot", json);
+      $text.value = '';
+    }
+
+    document.getElementById('send').onclick = send;
+    document.getElementById('sample1').onclick = () => { $text.value = "Hi can I book a Haircut this Friday 3pm with Aida?"; };
+    document.getElementById('sample2').onclick = () => { $text.value = "cancel my booking"; };
+  </script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Availability</title>
+  <style>
+    body { font-family: system-ui, Arial; margin: 20px; max-width: 900px }
+    .row { display:flex; gap:8px; flex-wrap:wrap }
+    .card { border:1px solid #ddd; border-radius:8px; padding:12px; margin:8px 0 }
+    button { padding:6px 10px }
+    select, input[type=date] { padding:6px }
+    .slot { display:inline-block; margin:4px; padding:6px 8px; border:1px solid #aaa; border-radius:6px }
+  </style>
+  <script>
+    async function load() {
+      const [services, staff] = await Promise.all([
+        fetch('/api/services').then(r=>r.json()),
+        fetch('/api/staff').then(r=>r.json()),
+      ]);
+      const sSel = document.getElementById('service');
+      services.forEach(s => { const o=document.createElement('option'); o.value=s.id; o.textContent=`${s.name} (${s.duration_min}m)`; sSel.appendChild(o); });
+      const tSel = document.getElementById('staff');
+      staff.forEach(s => { const o=document.createElement('option'); o.value=s.id; o.textContent=s.name; tSel.appendChild(o); });
+    }
+    async function show() {
+      const d = document.getElementById('date').value;
+      const service_id = document.getElementById('service').value;
+      const staff_id = document.getElementById('staff').value;
+      if (!d || !service_id || !staff_id) return;
+      const r = await fetch(`/availability?date=${d}&service_id=${service_id}&staff_id=${staff_id}`);
+      if (!r.ok) { document.getElementById('slots').textContent = 'Error'; return }
+      const data = await r.json();
+      const el = document.getElementById('slots'); el.innerHTML = '';
+      const phoneCTA = (label) => {
+        const text = encodeURIComponent(`Hi, I'd like ${data.service} on ${d} at ${label.split('-')[0]} with ${data.staff}.`);
+        return `https://wa.me/?text=${text}`;
+      };
+      data.slots.forEach(s => {
+        const a = document.createElement('a'); a.className='slot'; a.href = phoneCTA(s.label); a.target='_blank'; a.textContent = s.label; el.appendChild(a);
+      });
+    }
+    window.addEventListener('DOMContentLoaded', load);
+  </script>
+</head>
+<body>
+  <h2>Live Availability</h2>
+  <div class="card">
+    <div class="row">
+      <label>Date <input id="date" type="date" onchange="show()"></label>
+      <label>Service <select id="service" onchange="show()"><option value="">Select…</option></select></label>
+      <label>Staff <select id="staff" onchange="show()"><option value="">Select…</option></select></label>
+    </div>
+  </div>
+  <div class="card">
+    <div id="slots">Pick a date, service, and staff to see slots.</div>
+  </div>
+</body>
+</html>
+

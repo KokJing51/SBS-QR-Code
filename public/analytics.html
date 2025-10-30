@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: system-ui, Arial; max-width: 1100px; margin: 24px auto; }
+    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; text-align: center; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    canvas { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Analytics</h1>
+  <div><a href="/">Home</a></div>
+  <div class="card">
+    <label>Month <input type="month" id="month"></label>
+    <button onclick="loadCalendar()">Show Calendar</button>
+  </div>
+  <div class="card" id="calendar"></div>
+  <div class="card">
+    <div>Legend: 0% <span style="display:inline-block;width:80px;height:12px;background:linear-gradient(90deg, hsl(0,70%,60%), hsl(60,70%,70%), hsl(120,70%,80%))"></span> 100%</div>
+  </div>
+  <div class="cards">
+    <div class="card"><div>Total bookings</div><h2 id="tot"></h2></div>
+    <div class="card"><div>Confirmed</div><h2 id="conf"></h2></div>
+    <div class="card"><div>Cancelled</div><h2 id="canc"></h2></div>
+    <div class="card"><div>Inbound msgs</div><h2 id="inb"></h2></div>
+  </div>
+  <div class="cards">
+    <div class="card"><div>Median chat→confirm (min)</div><h2 id="med"></h2></div>
+    <div class="card"><div>Abandoned holds</div><h2 id="aband"></h2></div>
+    <div class="card"><div>Utilisation today (avg %)</div><h2 id="utilavg"></h2></div>
+  </div>
+  <div class="card">
+    <h3>Failure Breakdown (30d)</h3>
+    <ul id="fails"></ul>
+  </div>
+  <div class="grid">
+    <div><h3>Busy Hours</h3><canvas id="hours"></canvas></div>
+    <div><h3>Service Mix</h3><canvas id="mix"></canvas></div>
+  </div>
+  <div class="grid">
+    <div>
+      <h3>Demand Heatmap (DOW×Hour)</h3>
+      <table id="heat" class="card"></table>
+    </div>
+    <div>
+      <h3>Staff Utilisation (Today)</h3>
+      <table id="util" class="card"></table>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Staff × Day Utilisation (Last 7 days)</h3>
+    <table id="util7"></table>
+  </div>
+
+  <script>
+    async function load(){
+      const r = await fetch('/metrics'); const m = await r.json();
+      document.getElementById('tot').textContent  = m.totals.total_bookings;
+      document.getElementById('conf').textContent = m.totals.confirmed;
+      document.getElementById('canc').textContent = m.totals.cancelled;
+      document.getElementById('inb').textContent  = m.funnel.inbound;
+      document.getElementById('med').textContent  = m.medianChatToConfirmMin ?? '-';
+      document.getElementById('aband').textContent= m.failures?.user_abandoned ?? 0;
+      const utilavg = (m.utilisationToday||[]).reduce((a,x)=>a+x.utilisation_pct,0) / ((m.utilisationToday||[]).length||1);
+      document.getElementById('utilavg').textContent = isFinite(utilavg)? Math.round(utilavg):'-';
+      const fails = m.failures||{}; const fl = document.getElementById('fails');
+      fl.innerHTML = Object.keys(fails).map(k=>`<li>${k}: ${fails[k]}</li>`).join('');
+
+      const hrs = m.byHour.map(x => x.hour);
+      const hvals = m.byHour.map(x => x.c);
+      new Chart(document.getElementById('hours'), {
+        type: 'bar',
+        data: { labels: hrs, datasets: [{ label: 'Confirmed', data: hvals }] },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+
+      const labels = m.serviceMix.map(x => x.service);
+      const vals = m.serviceMix.map(x => x.c);
+      new Chart(document.getElementById('mix'), {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data: vals }] }
+      });
+
+      // heatmap table
+      const ht = document.getElementById('heat');
+      ht.innerHTML = '<tr><th>DOW</th><th>Hour</th><th>Count</th></tr>' + (m.heatmap||[]).map(r=>`<tr><td>${r.dow}</td><td>${r.hour}</td><td>${r.c}</td></tr>`).join('');
+
+      // utilisation table
+      const ut = document.getElementById('util');
+      ut.innerHTML = '<tr><th>Staff</th><th>Booked (min)</th><th>Avail (min)</th><th>Util %</th></tr>' + (m.utilisationToday||[]).map(r=>`<tr><td>${r.staff}</td><td>${r.booked_min}</td><td>${r.available_min}</td><td>${r.utilisation_pct}</td></tr>`).join('');
+      const util7 = document.getElementById('util7');
+      util7.innerHTML = '<tr><th>Date</th><th>Staff</th><th>Booked</th><th>Avail</th><th>Util %</th></tr>' + (m.staff_util_by_day||[]).map(r=>`<tr><td>${r.date}</td><td>${r.staff_name}</td><td>${r.booked_minutes}</td><td>${r.available_minutes}</td><td>${Math.round(r.utilization*100)}</td></tr>`).join('');
+    }
+    function utilToColor(u){ const hue=120*u; const sat=70; const light=60+20*u; return `hsl(${hue}, ${sat}%, ${light}%)`; }
+    async function loadCalendar(){
+      const m = document.getElementById('month').value || new Date().toISOString().slice(0,7);
+      const start = m+'-01';
+      const end = new Date(new Date(start).getFullYear(), new Date(start).getMonth()+1, 0).toISOString().slice(0,10);
+      const r = await fetch(`/metrics/daily?start=${start}&end=${end}`);
+      const d = await r.json();
+      const cal = document.getElementById('calendar');
+      const dates = d.daily_calendar || [];
+      // Build 7-col grid Mon..Sun
+      const startDate = new Date(start);
+      const firstDow = (startDate.getDay()+6)%7; // Mon=0
+      const cells = [];
+      for (let i=0;i<firstDow;i++) cells.push(null);
+      dates.forEach(x => cells.push(x));
+      while (cells.length % 7) cells.push(null);
+      let html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">';
+      const heads = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+      html += heads.map(h=>`<div style="text-align:center;color:#666">${h}</div>`).join('');
+      cells.forEach(c => {
+        if (!c) { html += '<div style="height:40px;border:1px solid #eee;border-radius:6px"></div>'; return; }
+        const day = c.date.slice(-2);
+        let bg = c.is_closed ? '#e5e7eb' : utilToColor(c.utilization);
+        const tip = `${c.date} • bookings: ${c.bookings_count} • util: ${Math.round(c.utilization*100)}%`;
+        html += `<div title="${tip}" style="height:40px;border:1px solid #ddd;border-radius:6px;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:600">${day}${c.is_closed?'×':''}</div>`;
+      });
+      html += '</div>';
+      cal.innerHTML = html;
+    }
+    // default month
+    document.getElementById('month').value = new Date().toISOString().slice(0,7);
+    loadCalendar();
+    load();
+  </script>
+</body>
+</html>

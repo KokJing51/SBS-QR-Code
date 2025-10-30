@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Admin</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; max-width: 900px; margin: 24px auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
+    .row { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+    input, button { padding: 8px; }
+    .ok { color: #0a0; } .err { color: #a00; }
+  </style>
+</head>
+<body>
+  <h1>Admin (Today)</h1>
+<div class="row">
+  <label>Start <input id="r_start" type="date"></label>
+  <label>End <input id="r_end" type="date"></label>
+  <button id="refresh">Load</button>
+  <span id="status"></span>
+</div>
+
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Service</th><th>Staff</th><th>Phone</th><th>Start</th><th>End</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <h2>Add Time Off</h2>
+  <div class="row">
+    <label>Staff ID <input id="off_staff" type="number" value="1" min="1"></label>
+    <label>Start <input id="off_start" type="datetime-local"></label>
+    <label>End <input id="off_end" type="datetime-local"></label>
+    <label>Reason <input id="off_reason" type="text" placeholder="Reason (optional)"></label>
+    <button id="add_off">Add</button>
+  </div>
+
+  <script>
+    async function authFetch(url, opts={}){
+      const u = prompt("Admin username:", "");
+      const p = prompt("Admin password:", "");
+      const h = Object.assign({}, opts.headers || {}, {
+        "Authorization": "Basic " + btoa(u + ":" + p),
+        "Content-Type": "application/json"
+      });
+      return fetch(url, Object.assign({}, opts, { headers: h }));
+    }
+
+    function isoDate(d) {
+    return new Date(d).toISOString().slice(0,10);
+  }
+
+  async function loadRange(){
+    const s = document.getElementById('r_start').value;
+    const e = document.getElementById('r_end').value;
+    if (!s || !e) { document.getElementById('status').textContent = "Pick start & end dates"; return; }
+
+    const res = await authFetch(`/api/admin/range?start=${s}&end=${e}`);
+    if(!res.ok){ document.getElementById('status').textContent = "Auth failed"; return; }
+
+    const rows = await res.json();
+    const tbody = document.getElementById('rows'); tbody.innerHTML = "";
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${r.id}</td>
+        <td>${r.service}</td>
+        <td>${r.staff}</td>
+        <td>${r.phone}</td>
+        <td>${new Date(r.start_dt).toLocaleString()}</td>
+        <td>${new Date(r.end_dt).toLocaleString()}</td>
+        <td>${r.status}</td>
+        <td>${r.status==='confirmed' ? '<button data-id="'+r.id+'" class="cancel">Cancel</button>' : ''}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll('button.cancel').forEach(btn => {
+      btn.onclick = async () => {
+        const id = btn.getAttribute('data-id');
+        const r = await authFetch('/api/admin/cancel', { method:'POST', body: JSON.stringify({ id }) });
+        if(r.ok){ document.getElementById('status').textContent = "Cancelled "+id; loadRange(); }
+      };
+    });
+    document.getElementById('status').textContent = `Loaded ${rows.length} bookings`;
+  }
+
+  // wire up default range: today → +7 days
+  (function initRange(){
+    const today = new Date();
+    const plus7 = new Date(Date.now() + 7*24*3600*1000);
+    document.getElementById('r_start').value = isoDate(today);
+    document.getElementById('r_end').value = isoDate(plus7);
+  })();
+
+  document.getElementById('refresh').onclick = loadRange;
+  </script>
+</body>
+</html>

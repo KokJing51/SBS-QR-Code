@@ -1,0 +1,10 @@
+services:
+  salonbot:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file: .env
+    volumes:
+      - ./salon.db:/app/salon.db
+      - ./.wwebjs_auth:/app/.wwebjs_auth
+      - ./public:/app/public

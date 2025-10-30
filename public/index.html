@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Salon</title>
+  <style>
+    body { font-family: system-ui, Arial; max-width: 720px; margin: 24px auto; }
+    .card { border:1px solid #ddd; border-radius:10px; padding:16px; margin:12px 0 }
+    input, button { padding:8px }
+  </style>
+</head>
+<body>
+  <h1>Welcome</h1>
+  <div class="card"><a href="/availability.html">Browse Availability</a></div>
+  <div class="card"><a href="/admin/dashboard">Admin Dashboard</a></div>
+  <div class="card"><a href="/mopa">For Businesses: Onboard your salon (invite required)</a></div>
+  <div class="card">
+    <h3>Manage My Booking</h3>
+    <input id="tok" placeholder="Paste manage token" style="width:320px"/>
+    <button onclick="go()">Open</button>
+    <script>
+      function go(){ var t=document.getElementById('tok').value.trim(); if(t) location.href='/manage/'+encodeURIComponent(t); }
+    </script>
+  </div>
+</body>
+</html>

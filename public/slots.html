@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Slots Viewer</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; max-width: 800px; margin: 24px auto; }
+    .row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    input, select, button { padding: 8px; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 6px 0; display: flex; gap: 8px; align-items: center; }
+    .slot { padding: 6px 10px; border: 1px solid #ddd; border-radius: 8px; }
+    .note { color: #666; font-size: 12px; margin-left: 8px }
+  </style>
+</head>
+<body>
+  <h1>Availability (Browse-Only)</h1>
+
+  <div class="row">
+    <label>Date: <input id="date" type="date" /></label>
+    <label>Service ID: <input id="service" type="number" value="1" min="1" /></label>
+    <label>Staff ID: <input id="staff" type="number" value="1" min="1" /></label>
+    <label>Phone (for WA text): <input id="phone" type="text" value="+60123456789" /></label>
+    <button id="load">Load Slots</button>
+  </div>
+
+  <div id="status"></div>
+  <ul id="list"></ul>
+
+  <script>
+    const $date = document.getElementById('date');
+    const $service = document.getElementById('service');
+    const $staff = document.getElementById('staff');
+    const $phone = document.getElementById('phone');
+    const $status = document.getElementById('status');
+    const $list = document.getElementById('list');
+
+    // default to today
+    const today = new Date().toISOString().slice(0,10);
+    $date.value = today;
+
+    document.getElementById('load').onclick = async () => {
+      $status.textContent = "Loading...";
+      $list.innerHTML = "";
+      const url = `/availability?date=${$date.value}&service_id=${$service.value}&staff_id=${$staff.value}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      $status.textContent = `Service: ${json.service} | Staff: ${json.staff} | ${json.slots.length} slots`;
+
+      json.slots.forEach(slot => {
+        const li = document.createElement('li');
+        const span = document.createElement('span');
+        span.className = 'slot';
+        span.textContent = slot.label;
+        li.appendChild(span);
+
+        const a = document.createElement('a');
+        const timeLabel = slot.label.split('-')[0];
+        a.textContent='Book via WhatsApp';
+        a.href = `https://wa.me/?text=${encodeURIComponent('Hi, I\'d like service '+$service.value+' on '+$date.value+' at '+timeLabel+' with staff '+$staff.value+'.')}`;
+        a.target='_blank';
+        li.appendChild(a);
+        const note = document.createElement('span'); note.className='note'; note.textContent='Direct web booking disabled.'; li.appendChild(note);
+
+        $list.appendChild(li);
+      });
+    };
+  </script>
+</body>
+</html>
+

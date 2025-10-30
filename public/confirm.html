@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Booking Confirmation</title>
+  <style>
+    body { font-family: system-ui, Arial; margin: 20px; max-width: 720px }
+    .card { border:1px solid #ddd; border-radius:8px; padding:12px; margin:8px 0 }
+    a.button { display:inline-block; padding:8px 12px; border:1px solid #333; border-radius:6px; text-decoration:none }
+  </style>
+  <script>
+    function q(k){ return new URLSearchParams(location.search).get(k) }
+    async function load(){
+      const id = q('id');
+      const token = q('token');
+      if (!id || !token) { document.getElementById('main').innerText = 'Missing id or token'; return }
+      const r = await fetch(`/api/bookings/${id}?token=${encodeURIComponent(token)}`);
+      if (!r.ok) { document.getElementById('main').innerText = 'Invalid link'; return }
+      const b = await r.json();
+      const when = new Date(b.start_dt);
+      const ics = `/bookings/${id}/ics?token=${encodeURIComponent(token)}`;
+      const manage = `/manage/${token}`;
+      document.getElementById('main').innerHTML = `
+        <div class="card"><b>${b.service_name}</b> with <b>${b.staff_name}</b><br/>${when.toLocaleString()} (${b.status})</div>
+        <div class="card"><a class="button" href="${ics}">Add to Calendar (.ics)</a> &nbsp; <a class="button" href="${manage}">Manage Booking</a></div>
+      `;
+    }
+    window.addEventListener('DOMContentLoaded', load);
+  </script>
+</head>
+<body>
+  <h2>Booking Confirmed</h2>
+  <div id="main">Loading…</div>
+</body>
+</html>
+
