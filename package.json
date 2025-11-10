@@ -13,8 +13,7 @@
     "test": "vitest run",
     "build:site": "npm --prefix \"frontend/Responsive Booking Marketplace\" run build",
     "build:portal": "npm --prefix \"frontend/Merchant Portal Design\" run build",
-    "build:web": "npm run build:site && npm run build:portal && node scripts/copy-frontend-builds.js",
-    "postinstall": "node scripts/postinstall.js"
+    "build:web": "npm run build:site && npm run build:portal && node scripts/copy-frontend-builds.js"
 
   },
   "workspaces": [

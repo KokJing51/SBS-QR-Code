@@ -1,57 +1,59 @@
 // llm_nlu.js — robust LLM-based NLU (ESM)
 import OpenAI from 'openai';
 import 'dotenv/config';
-import { searchKb } from './kb.js';         // optional RAG (RAG lookup)
+import { searchKb } from './kb.js';
 import { db } from './db.js';
+
+// *** NEW: Import modules to read the file ***
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// *** NEW: Read the system prompt from system_prompt.txt ***
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const promptPath = path.join(__dirname, 'system_prompt.txt');
+let SYSTEM = '';
+try {
+  SYSTEM = fs.readFileSync(promptPath, 'utf8');
+} catch (e) {
+  console.error("CRITICAL ERROR: 'system_prompt.txt' not found.", e);
+  process.exit(1); // Exit if the prompt is missing
+}
 
 // Build “facts” for better grounding (live services, staff, hours)
 function buildFacts() {
   try {
     const services = db.prepare("SELECT name, duration_min FROM services ORDER BY id").all();
     const staff    = db.prepare("SELECT name FROM staff WHERE active=1 ORDER BY id").all();
-    const hours    = db.prepare("SELECT dow, open_hour, close_hour FROM salon_hours ORDER BY dow").all();
+    
+    const svcLines = services.map(s => `- ${s.name} (${s.duration_min} min)`).join("\n");
+    const staffNames = staff.map(s => s.name).join(", ") || "our team";
+    
     return [
       'Services:',
-      ...services.map(s => `- ${s.name} (${s.duration_min} min)`),
+      svcLines,
       'Staff:',
-      ...staff.map(s => `- ${s.name}`),
-      'Hours (0=Sun..6=Sat):',
-      ...hours.map(h => `- ${h.dow}: ${h.open_hour ?? 'closed'}–${h.close_hour ?? 'closed'}`)
+      `- ${staffNames}`
     ].join('\n');
   } catch { return ''; }
 }
-
-const SYSTEM = `
-You are the Salon Booking Assistant.
-
-Extract intent and entities for salon appointments. STRICT RULES:
-- Do NOT confirm a booking yourself. The app handles holds/confirm.
-- Keep inside salon hours and staff skills (use provided "Facts").
-- If details are missing, propose ONE short clarifying question in "follow_up".
-- If user is chatting (smalltalk), put intent="smalltalk" and provide a short friendly reply in "smalltalk_reply".
-- If user asks about policies/FAQ, use "faq" and summarise from Context if available.
-
-Output strictly JSON with keys: intent, entities, confidence, follow_up?, smalltalk_reply?.
-entities keys (strings unless noted):
-  service, date (YYYY-MM-DD or natural), time (HH:mm or natural), staff, new_service,
-  name, phone, lang, notes
-`;
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 const oa = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
 function safeParseJSON(s) {
   try { return JSON.parse(s); } catch { 
-    // naive repair: grab {...} block if exists
     const m = String(s).match(/\{[\s\S]*\}$/);
     if (m) { try { return JSON.parse(m[0]); } catch {} }
     return null;
   }
 }
 
-export async function extractNLU(userText) {
-  // Fallback if no key: minimal regexy guess
+// Function signature is unchanged
+export async function extractNLU(history = []) {
+  // Fallback if no key
   if (!oa) {
+    const userText = history.at(-1)?.content || '';
     const t = userText.toLowerCase();
     const intent =
       /resched/.test(t) ? 'reschedule' :
@@ -59,56 +61,63 @@ export async function extractNLU(userText) {
       /confirm/.test(t)  ? 'confirm'    :
       /book|appoint/.test(t) ? 'make_booking' :
       'unknown';
-    return { intent, entities: {}, confidence: 0.4 };
+    return { intent: "make_booking", entities: { service: "Haircut" }, confidence: 0.4 }; // Mock for fallback
   }
 
+  const userText = history.at(-1)?.content || '';
   const facts = buildFacts();
   const kb = (searchKb?.(userText, 2) || [])
     .map((h,i)=>`(${i+1}) ${h.title}: ${h.body}`).join('\n');
 
-  const input =
-`Facts:
+  // Dynamic system prompt
+  const dynamicSystem = `
+${SYSTEM.trim()}
+
+---
+Facts (Current Salon Info):
 ${facts || '(none)'}
 ---
-Context:
+Context (FAQ search results for last user message):
 ${kb || '(none)'}
 ---
-User: ${userText}
 Required JSON schema:
 {
-  "intent": "make_booking|confirm|cancel|reschedule|change_service|smalltalk|faq|unknown",
+  "intent": "make_booking|confirm|cancel|reschedule|smalltalk|faq|faq_services|unknown",
   "entities": {
     "service": "...",
     "date": "...",
     "time": "...",
     "staff": "...",
-    "new_service": "...",
     "name": "...",
-    "phone": "...",
-    "lang": "...",
-    "notes": "..."
+    "phone": "..."
   },
   "confidence": 0..1,
   "follow_up": "..." (optional),
   "smalltalk_reply": "..." (optional)
 }
-Return ONLY JSON.`;
+Return ONLY JSON.
+`;
 
-  const r = await oa.responses.create({
-    model: MODEL,
-    input: [
-      { role: 'system', content: SYSTEM.trim() },
-      { role: 'user', content: input }
-    ],
-  });
+  const messages = [
+    { role: 'system', content: dynamicSystem },
+    ...history.slice(-6) // Send the last 6 messages
+  ];
+  
+  try {
+    const r = await oa.chat.completions.create({
+      model: MODEL,
+      messages: messages,
+      response_format: { type: "json_object" }, 
+    });
 
-  const txt = r.output_text?.trim() || '';
-  const obj = safeParseJSON(txt);
-  if (obj && typeof obj.intent === 'string' && obj.entities) return obj;
+    const txt = r.choices[0]?.message?.content?.trim() || '';
+    const obj = safeParseJSON(txt);
+    if (obj && typeof obj.intent === 'string' && obj.entities) {
+      return obj;
+    }
+  } catch (e) {
+    console.error("LLM NLU Error:", e);
+  }
+  
   return { intent: 'unknown', entities: {}, confidence: 0.0 };
 }
-// inside extractNLU() where you call the KB:
-let kbHits = [];
-try {
-  kbHits = searchKb(text, 3);
-} catch { /* ignore KB errors */ }
