@@ -1,456 +1,470 @@
-// handler.js — unified logic: logging + suggestions + pending/confirm + time-only context
+// handler.js — "Code Decides the Goal, LLM Decides the Words"
 
 import dayjs from "dayjs";
 import "./tz-setup.js";
-// import { parseMessage } from "./nlu.js"; // using LLM NLU instead
-import { resolveNext } from "./time.js";
 import { db } from "./db.js";
-import { generateSlots } from "./availability.js";
+import { generateSlots } from "./availability.js"; 
+import { resolveNext } from "./time.js"; // Added missing import
 import crypto from "crypto";
 import { matchServiceWithScore, matchStaffWithScore } from "./match.js";
-import { extractNLU } from "./llm_nlu.js";
+import { extractNLU } from "./llm_nlu.js"; // Our "Router"
+import { searchKb } from './kb.js'; // For the FAQ specialist
+import OpenAI from 'openai';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+// --- OpenAI Client & Model ---
+const MODEL = process.env.OPENAI_MODEL || 'gpt-5-mini';
+const oa = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
+
+// --- Load All Prompt Templates ---
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const loadPrompt = (fileName) => {
+  try {
+    return fs.readFileSync(path.join(__dirname, fileName), 'utf8');
+  } catch (e) {
+    console.error(`CRITICAL ERROR: '${fileName}' not found.`, e);
+    process.exit(1);
+  }
+};
+const FAQ_PROMPT_TEMPLATE = loadPrompt('faq_prompt.txt');
+const BOOKING_REPLY_TEMPLATE = loadPrompt('booking_reply_prompt.txt');
+const CONFIRM_REPLY_TEMPLATE = loadPrompt('confirm_reply_prompt.txt');
+const CANCEL_REPLY_TEMPLATE = loadPrompt('cancel_reply_prompt.txt');
+const SMALLTALK_REPLY_TEMPLATE = loadPrompt('smalltalk_reply_prompt.txt');
+
+// --- Constants ---
 const HOLD_MINUTES = parseInt(process.env.HOLD_MINUTES || "2", 10);
+const STATE_EXPIRE_MINUTES = 15; // Conversation state will be forgotten after 15 mins
+const BOT_NAME = "Linda"; // Or get from env
 
-// first inbound helper (for greeting)
-const qFirstMsgAt = db.prepare(`
-  SELECT MIN(created_at) AS first_at FROM message_log WHERE phone=? AND direction='in'
-`);
+// --- Database Queries ---
+const qFirstMsgAt = db.prepare(`SELECT MIN(created_at) AS first_at FROM message_log WHERE phone=? AND direction='in'`);
+const qFindService = db.prepare("SELECT * FROM services WHERE LOWER(name)=LOWER(?)");
+const qFindStaff = db.prepare("SELECT * FROM staff WHERE LOWER(name)=LOWER(?)");
+const qClashConfirmed = db.prepare("SELECT 1 FROM bookings WHERE staff_id=? AND start_dt=? AND status='confirmed' LIMIT 1");
+const qClashActive = db.prepare("SELECT 1 FROM bookings WHERE staff_id=? AND start_dt=? AND (status='confirmed' OR (status='pending' AND hold_until > datetime('now'))) LIMIT 1");
+const qInsertPending = db.prepare(`INSERT INTO bookings (phone, staff_id, service_id, start_dt, end_dt, status, hold_until, reschedule_of) VALUES (?, ?, ?, ?, ?, 'pending', ?, NULL)`);
+const qConfirm = db.prepare(`UPDATE bookings SET status='confirmed', hold_until=NULL WHERE id=? AND status='pending'`);
+const qGetById = db.prepare(`SELECT * FROM bookings WHERE id=?`);
+const qLatestPendingFor = db.prepare(`SELECT * FROM bookings WHERE phone=? AND status='pending' AND hold_until > datetime('now') ORDER BY id DESC LIMIT 1`);
+const qLatestConfirmedFor = db.prepare(`SELECT * FROM bookings WHERE phone=? AND status='confirmed' ORDER BY id DESC LIMIT 1`);
+const qCancelById = db.prepare(`UPDATE bookings SET status='cancelled', hold_until=NULL WHERE id=?`);
+const qExpirePendings = db.prepare(`UPDATE bookings SET status='cancelled', hold_until=NULL WHERE status='pending' AND hold_until <= datetime('now')`);
+const qLog = db.prepare(`INSERT INTO message_log(direction, phone, body) VALUES (?,?,?)`);
+const qTokenByBooking = db.prepare(`SELECT token FROM booking_tokens WHERE booking_id=?`);
+const qInsertToken = db.prepare(`INSERT OR IGNORE INTO booking_tokens (booking_id, token, expires_at) VALUES (?,?,?)`);
+const qUpsertCustomer = db.prepare(`INSERT INTO customers (phone_e164, name) VALUES (?, ?) ON CONFLICT(phone_e164) DO UPDATE SET name=COALESCE(excluded.name, customers.name)`);
+const qGetCustomerName = db.prepare("SELECT name FROM customers WHERE phone_e164 = ?");
+const qSvcByIdFull = db.prepare("SELECT * FROM services WHERE id=?");
+const qStfByIdFull = db.prepare("SELECT * FROM staff WHERE id=?");
+const qListServices = db.prepare(`SELECT name, duration_min, price FROM services ORDER BY id`);
+const qListStaff = db.prepare(`SELECT name FROM staff WHERE active=1 ORDER BY id`);
+const qRecentLogs = db.prepare(`SELECT direction, body FROM message_log WHERE phone=? ORDER BY id DESC LIMIT 7`);
 
-// ---------- Prepared statements ----------
-const qFindService      = db.prepare("SELECT * FROM services WHERE LOWER(name)=LOWER(?)");
-const qFindStaff        = db.prepare("SELECT * FROM staff WHERE LOWER(name)=LOWER(?)");
-
-const qClashConfirmed   = db.prepare("SELECT 1 FROM bookings WHERE staff_id=? AND start_dt=? AND status='confirmed' LIMIT 1");
-const qClashActive      = db.prepare(
-  "SELECT 1 FROM bookings WHERE staff_id=? AND start_dt=? AND (status='confirmed' OR (status='pending' AND hold_until > datetime('now'))) LIMIT 1"
-);
-
-const qInsertPending    = db.prepare(`
-  INSERT INTO bookings (phone, staff_id, service_id, start_dt, end_dt, status, hold_until, reschedule_of)
-  VALUES (?, ?, ?, ?, ?, 'pending', ?, NULL)
-`);
-const qConfirm          = db.prepare(`UPDATE bookings SET status='confirmed', hold_until=NULL WHERE id=? AND status='pending'`);
-const qGetById          = db.prepare(`SELECT * FROM bookings WHERE id=?`);
-
-const qLatestPendingFor   = db.prepare(`
-  SELECT * FROM bookings
-  WHERE phone=? AND status='pending' AND hold_until > datetime('now')
-  ORDER BY id DESC LIMIT 1
-`);
-const qLatestConfirmedFor = db.prepare(`
-  SELECT * FROM bookings
-  WHERE phone=? AND status='confirmed'
-  ORDER BY id DESC LIMIT 1
-`);
-const qCancelById       = db.prepare(`UPDATE bookings SET status='cancelled', hold_until=NULL WHERE id=?`);
-const qExpirePendings   = db.prepare(`UPDATE bookings SET status='cancelled', hold_until=NULL WHERE status='pending' AND hold_until <= datetime('now')`);
-
-const qLog              = db.prepare(`INSERT INTO message_log(direction, phone, body) VALUES (?,?,?)`);
-const qTokenByBooking   = db.prepare(`SELECT token FROM booking_tokens WHERE booking_id=?`);
-const qInsertToken      = db.prepare(`INSERT OR IGNORE INTO booking_tokens (booking_id, token, expires_at) VALUES (?,?,?)`);
-
-// *** UPDATED: Upsert customer and get name ***
-const qUpsertCustomer   = db.prepare(`
-  INSERT INTO customers (phone_e164, name) VALUES (?, ?)
-  ON CONFLICT(phone_e164) DO UPDATE SET name=COALESCE(excluded.name, customers.name)
-`);
-const qGetCustomerName  = db.prepare("SELECT name FROM customers WHERE phone_e164 = ?");
-
-const qSvcByIdFull      = db.prepare("SELECT * FROM services WHERE id=?");
-const qStfByIdFull      = db.prepare("SELECT * FROM staff WHERE id=?");
-
-// NEW: lists for menu
-const qListServices = db.prepare(`SELECT name, duration_min FROM services ORDER BY id`);
-const qListStaff    = db.prepare(`SELECT name FROM staff WHERE active=1 ORDER BY id`);
-
-// Session context (so a reply like "10:00 AM" works after suggestions)
-const qSetCtx = db.prepare(`
-  INSERT INTO session_ctx (phone, service_id, staff_id, date_local, expires_at)
-  VALUES (?, ?, ?, ?, ?)
+// *** NEW QUERIES FOR STATE MANAGEMENT ***
+const qGetBookingState = db.prepare("SELECT * FROM booking_state WHERE phone = ? AND expires_at > datetime('now')");
+const qSaveBookingState = db.prepare(`
+  INSERT INTO booking_state (phone, service, staff, date, time, name, expires_at)
+  VALUES (@phone, @service, @staff, @date, @time, @name, @expires_at)
   ON CONFLICT(phone) DO UPDATE SET
-    service_id=excluded.service_id,
-    staff_id=excluded.staff_id,
-    date_local=excluded.date_local,
-    expires_at=excluded.expires_at
+    service = excluded.service,
+    staff = excluded.staff,
+    date = excluded.date,
+    time = excluded.time,
+    name = excluded.name,
+    expires_at = excluded.expires_at
 `);
-const qGetCtx   = db.prepare(`SELECT * FROM session_ctx WHERE phone=? AND expires_at > datetime('now')`);
-const qClearCtx = db.prepare(`DELETE FROM session_ctx WHERE phone=?`);
-const qSetOpts = db.prepare(`
-  INSERT INTO session_opts (phone, options_json, expires_at)
-  VALUES (?, ?, ?)
-  ON CONFLICT(phone) DO UPDATE SET options_json=excluded.options_json, expires_at=excluded.expires_at
-`);
-const qGetOpts = db.prepare(`SELECT * FROM session_opts WHERE phone=? AND expires_at > datetime('now')`);
-const qClearOpts = db.prepare(`DELETE FROM session_opts WHERE phone=?`);
+const qClearBookingState = db.prepare("DELETE FROM booking_state WHERE phone = ?");
 
-// *** NEW ***: Query for message history
-const qRecentLogs = db.prepare(`
-  SELECT direction, body FROM message_log
-  WHERE phone=? ORDER BY id DESC LIMIT 7
-`);
 
-// ---------- helpers ----------
+// --- Helper Functions (buildMenu, buildFacts) ---
 function buildMenu() {
   const services = qListServices.all();
   const staff = qListStaff.all();
-
-  const svcLines = services
-    .map(s => `• ${s.name} (${s.duration_min} min)`)
-    .join("\n");
-
+  const svcLines = services.map(s => `• ${s.name} (${s.duration_min} min)`).join("\n");
   const staffNames = staff.map(s => s.name).join(", ") || "our team";
-
-  // This will just return the raw menu data
-  return (
-    svcLines +
-    `\n\nTeam: ${staffNames}`
-  );
+  return svcLines + `\n\nTeam: ${staffNames}`;
 }
 
-// ---------- Main handler ----------
-export async function handleInboundMessage({ from, text }) {
-  // expire stale holds each interaction
-  qExpirePendings.run();
+function buildFacts() {
+  try {
+    const services = qListServices.all();
+    const staff = qListStaff.all();
+    
+    const svcLines = services.map(s => {
+      const priceFmt = s.price ? `RM${s.price.toFixed(2)}` : 'N/A';
+      return `- ${s.name} (${s.duration_min} min, ${priceFmt})`;
+    }).join("\n");
+    
+    const staffNames = staff.map(s => s.name).join(", ") || "our team";
+    
+    return [
+      'Services and Prices:',
+      svcLines,
+      'Staff:',
+      `- ${staffNames}`
+    ].join('\n');
+  } catch(e) { 
+    console.error("Error in buildFacts:", e); 
+    return ''; 
+  }
+}
 
-  // *** === NEW CUSTOMER GREETING LOGIC === ***
-  // Check if this is a new customer BEFORE logging their first message
-  const firstSeen = qFirstMsgAt.get(from)?.first_at;
+
+// --- "SPECIALIST" FUNCTIONS ---
+
+/**
+ * NEW "REPLY SPECIALIST" (The "Mouth")
+ */
+async function generateLlmReply(template, context) {
+  if (!oa) return "Sorry, I'm having trouble thinking of a reply.";
+  let prompt;
   
+  // 1. Build the prompt
+  switch (template) {
+    case 'faq':
+      prompt = FAQ_PROMPT_TEMPLATE
+        .replace('{{facts}}', context.facts || '(none)')
+        .replace('{{kb}}', context.kb || '(none)')
+        .replace('{{question}}', context.question);
+      break;
+    
+    case 'booking':
+      prompt = BOOKING_REPLY_TEMPLATE
+        .replace('{{BOT_NAME}}', BOT_NAME)
+        .replace('{{faq_answer}}', context.faq_answer || 'null')
+        .replace('{{state_json}}', JSON.stringify(context.state, null, 2))
+        .replace('{{goal}}', context.goal);
+      break;
+      
+    case 'confirm':
+      const { booking } = context;
+      const svc = qSvcByIdFull.get(booking.service_id);
+      const stf = qStfByIdFull.get(booking.staff_id);
+      
+      prompt = CONFIRM_REPLY_TEMPLATE
+        .replace('{{BOT_NAME}}', BOT_NAME)
+        .replace('{{service_name}}', svc.name)
+        .replace('{{staff_name}}', stf.name)
+        .replace('{{booking_when}}', dayjs(booking.start_dt).format("ddd D MMM, h:mm A"))
+        .replace('{{manage_link}}', context.manage_link);
+      break;
+
+    case 'cancel':
+      prompt = CANCEL_REPLY_TEMPLATE
+        .replace('{{BOT_NAME}}', BOT_NAME)
+        .replace('{{result}}', context.result)
+        .replace('{{booking_details}}', JSON.stringify(context.booking, null, 2));
+      break;
+      
+    case 'smalltalk':
+      prompt = SMALLTALK_REPLY_TEMPLATE
+        .replace('{{BOT_NAME}}', BOT_NAME)
+        .replace('{{user_message}}', context.user_message);
+      break;
+      
+    default:
+      return "Sorry, I'm not sure what to say.";
+  }
+
+  // 2. Call the LLM
+  try {
+    const r = await oa.chat.completions.create({
+      model: MODEL,
+      messages: [{ role: 'system', content: prompt }],
+    });
+    return r.choices[0]?.message?.content?.trim() || "Oh, I'm stuck for words";
+  } catch (e) {
+    console.error(`LLM (Reply Specialist '${template}') Error:`, e);
+    return "Sorry, I had a problem generating a reply";
+  }
+}
+
+
+/**
+ * SPECIALIST 1: handleFAQ
+ */
+async function handleFAQ(question) {
+  const facts = buildFacts();
+  const kb = (searchKb?.(question, 2) || [])
+    .map((h,i)=>`(${i+1}) ${h.title}: ${h.body}`).join('\n');
+  
+  return generateLlmReply('faq', {
+    question,
+    facts: facts || '(none)',
+    kb: kb || '(none)'
+  });
+}
+
+/**
+ * SPECIALIST 2: handleBookingFlow (NOW STATEFUL)
+ */
+async function handleBookingFlow(phone, entities, faq_answer) {
+  // 1. Get all known entities (from DB state + new NLU entities)
+  const savedState = qGetBookingState.get(phone) || {};
+  // Merge: new entities from NLU overwrite old state
+  let state = {
+    service: entities.service || savedState.service || null,
+    staff: entities.staff || savedState.staff || null,
+    date: entities.date || savedState.date || null,
+    time: entities.time || savedState.time || null,
+    name: entities.name || savedState.name || qGetCustomerName.get(phone)?.name || null,
+  };
+
+  // 2. --- RIGID STATE MACHINE (To find the "Goal") ---
+  
+  if (!state.service) {
+    const menu = buildMenu();
+    return `Sure, which service are you looking for?\n\n${menu}`;
+  }
+  if (!state.staff) {
+    return generateLlmReply('booking', { goal: "GET_STAFF", state, faq_answer });
+  }
+  if (!state.date || !state.time) {
+    return generateLlmReply('booking', { goal: "GET_DATE_TIME", state, faq_answer });
+  }
+  if (!state.name) {
+    return generateLlmReply('booking', { goal: "GET_NAME", state, faq_answer });
+  }
+  
+  // 3. --- ALL INFO PRESENT: ATTEMPT HOLD ---
+  const { service, staff, date, time, name } = state;
+
+  const svc = qFindService.get(service);
+  let stf = staff ? qFindStaff.get(staff) : null;
+  
+  if (!stf) {
+    //
+    // *** THIS IS THE FIX ***
+    // Changed `matchServiceWithScore` to `matchStaffWithScore`
+    const ms = matchStaffWithScore(staff || "any", svc?.id);
+    //
+    stf = ms.staff || null;
+  }
+  
+  if (!svc || !stf) {
+    // If lookup fails, clear the bad state and ask again.
+    state.service = null; 
+    state.staff = null;
+    return generateLlmReply('booking', { goal: "GET_SERVICE_AGAIN", state, faq_answer: "I couldn't find that service or staff" });
+  }
+
+  const start_dt = resolveNext(date, time);
+  if (!start_dt) {
+    state.date = null; // Clear bad date/time
+    state.time = null;
+    return generateLlmReply('booking', { goal: "GET_DATE_TIME_AGAIN", state, faq_answer: "I couldn't read that date/time" });
+  }
+
+  const startISO = dayjs(start_dt).toISOString();
+  const endISO = dayjs(startISO).add(svc.duration_min, "minute").toISOString();
+  const holdUntilISO = dayjs().add(HOLD_MINUTES, "minute").toISOString();
+  
+  try {
+    const clash = qClashActive.get(stf.id, startISO);
+    if (clash) throw new Error("Slot taken");
+    
+    db.transaction(() => {
+      qInsertPending.run(phone, stf.id, svc.id, startISO, endISO, holdUntilISO);
+      qUpsertCustomer.run(phone, name); // Save name
+    })();
+
+  } catch (e) {
+    return generateLlmReply('booking', { goal: "SLOT_TAKEN", state, faq_answer });
+  }
+
+  // 4. --- SUCCESS: CLEAR STATE AND RETURN ---
+  qClearBookingState.run(phone); // Clear state, booking is now a 'hold'
+  
+  const holdMsg = `Holding ⏳ *${svc.name}* with *${stf.name}*, ${dayjs(startISO).format("ddd D MMM, h:mm A")}–${dayjs(endISO).format("h:mm A")}.\nReply *Confirm* within ${HOLD_MINUTES} min to secure it.`;
+  return holdMsg;
+}
+
+/**
+ * SPECIALIST 3: handleConfirm
+ */
+async function handleConfirm(phone) {
+  const pend = qLatestPendingFor.get(phone);
+  if (!pend) {
+    return "I don't see a pending booking to confirm.";
+  }
+  const clash = qClashConfirmed.get(pend.staff_id, pend.start_dt);
+  if (clash) {
+    qCancelById.run(pend.id);
+    return "Oh no that slot was just taken. Can we Try another time?";
+  }
+  
+  if (pend.reschedule_of) { 
+    try {
+      db.transaction(() => {
+        const old = qGetById.get(pend.reschedule_of);
+        if (!old) throw new Error('old_missing');
+        qConfirm.run(pend.id);
+        if (old.status === 'confirmed') qCancelById.run(old.id);
+      })();
+    } catch (e) {
+      return "I couldn't reschedule. Please try a different time.";
+    }
+  } else { 
+    qConfirm.run(pend.id); 
+  }
+  
+  let tok = qTokenByBooking.get(pend.id)?.token;
+  if (!tok) {
+    tok = crypto.randomBytes(16).toString('hex');
+    const ttlDays = parseInt(process.env.MANAGE_TOKEN_TTL_DAYS || "0", 10);
+    const exp = ttlDays > 0 ? dayjs().add(ttlDays, "day").toISOString() : null;
+    qInsertToken.run(pend.id, tok, exp);
+  }
+  const base = process.env.PUBLIC_BASE_URL || `http://localhost:${process.env.PORT||3000}`;
+  const mlink = `${base}/manage/${tok}`;
+  
+  qClearBookingState.run(phone); // ** Clear state on confirm **
+
+  // PASS TO LLM FOR REPLY
+  return generateLlmReply('confirm', {
+    booking: pend,
+    manage_link: mlink
+  });
+}
+
+/**
+ * SPECIALIST 4: handleCancel
+ */
+async function handleCancel(phone) {
+  const latest = qLatestConfirmedFor.get(phone);
+  if (!latest) {
+    return generateLlmReply('cancel', { result: "NOT_FOUND", booking: null });
+  }
+  
+  qCancelById.run(latest.id);
+  qClearBookingState.run(phone); // ** Clear state on cancel **
+
+  return generateLlmReply('cancel', { result: "SUCCESS", booking: latest });
+}
+
+/**
+ * SPECIALIST 5: handleSmalltalk
+ */
+async function handleSmalltalk(history) {
+    const lastMsg = history.at(-1)?.content || '';
+    return generateLlmReply('smalltalk', {
+      user_message: lastMsg
+    });
+}
+
+// --- "EXECUTOR" (The Main Handler) ---
+
+export async function handleInboundMessage({ from, text }) {
+  qExpirePendings.run(); 
+
+  // --- New Customer Welcome ---
+  const firstSeen = qFirstMsgAt.get(from)?.first_at;
   if (!firstSeen) {
-    // This is a NEW USER.
-    // Log their first inbound message
     qLog.run('in', from, text || '');
     try { qUpsertCustomer.run(from, null); } catch {}
-
-    // Now, build and send our special, multi-line welcome message.
     const menu = buildMenu();
     const welcome = [
       "Hi! Welcome to FEIN booking.",
       "I see that this is our first time chatting. So here's a quick look at our main services:",
-      "", // new line
-      menu, // This contains services and staff
-      "", // new line
+      "", menu, "",
       "You can ask me to book something (like 'I would like to book a Haircut tomorrow at 3pm with Ben'), or just ask any questions you have!"
     ].join('\n');
-    
     qLog.run('out', from, welcome);
-    return welcome; // <-- IMPORTANT: We return here and stop processing.
+    return welcome;
   }
-  // *** === END NEW CUSTOMER LOGIC === ***
-
-  // log inbound (for returning customers)
+  
+  // --- Returning Customer Logic ---
   qLog.run('in', from, text || '');
-  try { qUpsertCustomer.run(from, null); } catch {}
-
-  // Fetch history and pass to LLM
-  const historyRows = qRecentLogs.all(from).reverse(); 
+  const historyRows = qRecentLogs.all(from).reverse();
   const history = historyRows.map(r => ({
     role: r.direction === 'in' ? 'user' : 'assistant',
     content: r.body
   }));
-  
-  // LLM NLU (pass the full history)
+
+  // === STEP 1: Call the "Router" ===
   const nlu = await extractNLU(history);
-  const entities = nlu?.entities || {};
 
-  // *** NEW ***: Save the name to the customer table AS SOON as we get it
-  if (entities.name) {
-    try { qUpsertCustomer.run(from, entities.name); } catch(e) { console.error("Error upserting customer name:", e); }
+  // === STEP 2: Call the "Specialists" ===
+  let faqResponse = null;
+  let mainResponse = null;
+
+  if (nlu.user_question) {
+    faqResponse = await handleFAQ(nlu.user_question);
   }
 
-  // If LLM suggests a clarifying question (but NOT for a new booking)
-  if (nlu.follow_up && ['reschedule','change_service'].includes(nlu.intent)) {
-    const ask = String(nlu.follow_up).slice(0, 200);
-    qLog.run('out', from, ask);
-    return ask;
-  }
+  // ** Create a variable to hold the final state to be saved **
+  let finalStateToSave = null;
 
-  // Smalltalk shortcut (for "hi", "thanks", etc.)
-  if (nlu.intent === 'smalltalk' && nlu.smalltalk_reply) {
-    const out = String(nlu.smalltalk_reply).slice(0, 300);
-    qLog.run('out', from, out);
-    return out;
-  }
-
-  // Numeric selection 1/2/3 for suggested alternatives
-  const sel = (text||'').trim();
-  if (/^[1-3]$/.test(sel)) {
-    // ... (this logic is fine, no changes needed)
-    const opt = qGetOpts.get(from);
-    if (opt) {
-      try {
-        const list = JSON.parse(opt.options_json || '[]');
-        const idx = parseInt(sel,10) - 1;
-        const chosen = list[idx];
-        if (chosen) {
-          const holdUntilISO = dayjs().add(HOLD_MINUTES, "minute").toISOString();
-          const tx = db.transaction(() => {
-            const clash = qClashActive.get(chosen.staff_id, chosen.start_dt);
-            if (clash) throw new Error('SLOT_TAKEN');
-            qInsertPending.run(from, chosen.staff_id, chosen.service_id, chosen.start_dt, chosen.end_dt, holdUntilISO);
-          });
-          tx();
-          qClearOpts.run(from);
-          const svcRow = qSvcByIdFull.get(chosen.service_id);
-          const stfRow = qStfByIdFull.get(chosen.staff_id);
-          const reply = `Holding — *${svcRow.name}* with *${stfRow.name}*, ${dayjs(chosen.start_dt).format('ddd D MMM, h:mm A')}–${dayjs(chosen.end_dt).format('h:mm A')}.\nReply *Confirm* within ${HOLD_MINUTES} min to secure it.`;
-          qLog.run('out', from, reply);
-          return reply;
-        }
-      } catch {}
-    }
-  }
-
-  // --- TIME-ONLY REPLY USING CONTEXT ---
-  // This is now a fallback, as the LLM should handle most context
-  const ctx = qGetCtx.get(from);
-  if (ctx && entities.time && (!entities.service || !entities.date)) {
-    // ... (this logic is fine, no changes needed)
-    const svcRow = qSvcByIdFull.get(ctx.service_id);
-    const stfRow = qStfByIdFull.get(ctx.staff_id);
-
-    if (!svcRow || !stfRow) {
-      qClearCtx.run(from);
-      const reply = "Oh no, I lost the previous selection. Can you please say the service and date again (like 'Book a Haircut on Friday').";
-      qLog.run('out', from, reply);
-      return reply;
-    }
-    const start_dt = resolveNext(ctx.date_local, entities.time);
-    if (!start_dt) {
-      const reply = "I couldn't read that time. Can you try it in this way? ('10:00 AM' or '10:00')";
-      qLog.run('out', from, reply);
-      return reply;
-    }
-    const startISO = dayjs(start_dt).toISOString();
-    const endISO   = dayjs(startISO).add(svcRow.duration_min, "minute").toISOString();
-    const holdUntilISO = dayjs().add(HOLD_MINUTES, "minute").toISOString();
-    try {
-      db.transaction(() => {
-        const clash = qClashActive.get(stfRow.id, startISO);
-        if (clash) throw new Error("Slot taken");
-        qInsertPending.run(from, stfRow.id, svcRow.id, startISO, endISO, holdUntilISO);
-      })();
-    } catch (e) {
-      const reply = "That slot was just taken by another customer :( Try another time?";
-      qLog.run('out', from, reply);
-      return reply;
-    }
-    qClearCtx.run(from);
-    const reply =
-      `Holding *${svcRow.name}* with *${stfRow.name}*, ` +
-      `${dayjs(startISO).format("ddd D MMM, h:mm A")}–${dayjs(endISO).format("h:mm A")}.\n` +
-      `Reply *Confirm* within ${HOLD_MINUTES} min to secure it.`;
-    qLog.run('out', from, reply);
-    return reply;
-  }
-
-  // --- CONFIRM latest pending ---
-  if (nlu.intent === "confirm") {
-    // ... (this logic is fine, no changes needed)
-    const pend = qLatestPendingFor.get(from);
-    if (!pend) {
-      const reply = "I don't see a pending booking to confirm. Can you try 'Please book Haircut on Friday at 3pm with Aida'.";
-      qLog.run('out', from, reply);
-      return reply;
-    }
-    const clash = qClashConfirmed.get(pend.staff_id, pend.start_dt);
-    if (clash) {
-      qCancelById.run(pend.id);
-      const reply = "Oh no that slot was just taken. Can we Try another time?";
-      qLog.run('out', from, reply);
-      return reply;
-    }
-    if (pend.reschedule_of) {
-      try {
-        db.transaction(() => {
-          const old = qGetById.get(pend.reschedule_of);
-          if (!old) throw new Error('old_missing');
-          qConfirm.run(pend.id);
-          if (old.status === 'confirmed') qCancelById.run(old.id);
-        })();
-      } catch (e) {
-        const reply = "I couldn't reschedule. Please try a different time.";
-        qLog.run('out', from, reply);
-        return reply;
+  switch (nlu.intent) {
+    case 'booking':
+      if (nlu.entities.name) {
+          try { qUpsertCustomer.run(from, nlu.entities.name); } catch(e) { console.error("Error upserting customer name:", e); }
       }
-    } else {
-      qConfirm.run(pend.id);
-    }
-    const svcRow = qSvcByIdFull.get(pend.service_id);
-    const stfRow = qStfByIdFull.get(pend.staff_id);
-    const when = `${dayjs(pend.start_dt).format("ddd D MMM, h:mm A")}–${dayjs(pend.end_dt).format("h:mm A")}`;
-    const reply = `Confirmed ✅ ${svcRow?.name || "Service"} with ${stfRow?.name || "Staff"}, ${when}.`;
-    let tok = qTokenByBooking.get(pend.id)?.token;
-    if (!tok) {
-      tok = crypto.randomBytes(16).toString('hex');
-      const ttlDays = parseInt(process.env.MANAGE_TOKEN_TTL_DAYS || "0", 10);
-      const exp = ttlDays > 0 ? dayjs().add(ttlDays, "day").toISOString() : null;
-      qInsertToken.run(pend.id, tok, exp);
-    }
-    const base = process.env.PUBLIC_BASE_URL || `http://localhost:${process.env.PORT||3000}`;
-    const mlink = `${base}/manage/${tok}`;
-    const reply2 = `${reply} Manage: ${mlink}`;
-    qLog.run('out', from, reply2);
-    qClearCtx.run(from);
-    return reply2;
-  }
-
-  // --- CANCEL latest confirmed ---
-  if (nlu.intent === "cancel") {
-    // ... (this logic is fine, no changes needed)
-    const latest = qLatestConfirmedFor.get(from);
-    if (!latest) {
-      const reply = "Oh no I can't find a confirmed booking to cancel can you please check if you got the right booking details?.";
-      qLog.run('out', from, reply);
-      return reply;
-    }
-    qCancelById.run(latest.id);
-    const reply = "Cancelled, Your slot is now free again.";
-    qLog.run('out', from, reply);
-    qClearCtx.run(from);
-    return reply;
-  }
-
-  // --- MAKE BOOKING ---
-  if (nlu.intent === "make_booking") {
+      mainResponse = await handleBookingFlow(from, nlu.entities, faqResponse);
+      break;
     
-    // 1. Get all known entities from the LLM
-    const { service, date, time, staff: staffName } = entities;
+    case 'confirm':
+      mainResponse = await handleConfirm(from);
+      break;
+
+    case 'cancel':
+      mainResponse = await handleCancel(from);
+      break;
+      
+    case 'smalltalk':
+      mainResponse = await handleSmalltalk(history); 
+      break;
+
+    case 'faq':
+      mainResponse = faqResponse; 
+      faqResponse = null; 
+      break;
+      
+    default:
+      if (!faqResponse) { 
+        mainResponse = "Sorry, I didn't quite catch that. I can help you book, reschedule, or cancel an appointment.";
+      }
+  }
+
+  // === STEP 3: Save State and Combine Reply ===
+  
+  // If we were in a booking flow, we must save the state *before* returning.
+  // We check if the response is a 'hold' message, which means we should NOT save state.
+  const isHoldMessage = mainResponse && mainResponse.startsWith('Holding ⏳');
+  
+  if (nlu.intent === 'booking' && !isHoldMessage) {
+    // We are still in the booking flow. Load, merge, and save state.
+    const savedState = qGetBookingState.get(from) || {};
+    const newState = {
+      service: nlu.entities.service || savedState.service || null,
+      staff: nlu.entities.staff || savedState.staff || null,
+      date: nlu.entities.date || savedState.date || null,
+      time: nlu.entities.time || savedState.time || null,
+      name: nlu.entities.name || savedState.name || qGetCustomerName.get(from)?.name || null,
+    };
     
-    // 2. Check if we know the customer's name (either from this message or DB)
-    const customerName = qGetCustomerName.get(from)?.name;
-
-    // 3. Check if we have EVERYTHING needed for a hold
-    if (service && date && time && customerName) {
-      // ---- ALL INFO IS PRESENT: CREATE HOLD ----
-      
-      const svc = qFindService.get(service);
-      let stf = staffName ? qFindStaff.get(staffName) : null;
-      if (!stf) {
-        const ms = matchStaffWithScore(staffName || "any", svc?.id);
-        stf = ms.staff || null;
-      }
-      if (!svc || !stf) {
-        const reply = "I couldn't find that service or staff. Let's try again. What service would you like?";
-        qLog.run('out', from, reply);
-        return reply;
-      }
-
-      const start_dt = resolveNext(date, time);
-      if (!start_dt) {
-        const reply = "I couldn't resolve that date/time—try 'Fri 3pm'.";
-        qLog.run('out', from, reply);
-        return reply;
-      }
-
-      const startISO = dayjs(start_dt).toISOString();
-      const endISO   = dayjs(startISO).add(svc.duration_min, "minute").toISOString();
-      const holdUntilISO = dayjs().add(HOLD_MINUTES, "minute").toISOString();
-
-      const anyPool = matchStaffWithScore(staffName || "any", svc.id).pool?.map(p => p.id) || [];
-      const order = stf?.id ? [stf.id, ...anyPool.filter(id => id !== stf.id)] : anyPool;
-      let held = false;
-      for (const sid of order) {
-        try {
-          db.transaction((args) => {
-            const [phone, staffId2, serviceId, sISO, eISO, holdISO] = args;
-            const clash = qClashActive.get(staffId2, sISO);
-            if (clash) throw new Error('SLOT_TAKEN');
-            qInsertPending.run(phone, staffId2, serviceId, sISO, eISO, holdISO);
-          })([from, sid, svc.id, startISO, endISO, holdUntilISO]);
-          held = true;
-          stf = qStfByIdFull.get(sid);
-          break;
-        } catch {}
-      }
-      if (!held) {
-        const reply = "That slot was just taken. Try another time?";
-        qLog.run('out', from, reply);
-        return reply;
-      }
-
-      const reply =
-        `Holding ⏳ *${svc.name}* with *${stf.name}*, ` +
-        `${dayjs(startISO).format("ddd D MMM, h:mm A")}–${dayjs(endISO).format("h:mm A")}.\n` +
-        `Reply *Confirm* within ${HOLD_MINUTES} min to secure it, or it will be released.`;
-      qLog.run('out', from, reply);
-      return reply;
-
-    } else {
-      // ---- INFO IS MISSING: SEND LLM'S QUESTION ----
-      
-      // The LLM's `follow_up` is now the single source of truth for "what's next?"
-      // It will either be "What time?" or "What's your name?" etc.
-      if (nlu.follow_up) {
-        const ask = String(nlu.follow_up).slice(0, 300);
-        qLog.run('out', from, ask);
-        return ask;
-      } else {
-        // Fallback: If the LLM failed, just send the menu.
-        // This handles the first "I wanna make a booking" message.
-        const menu = buildMenu();
-        const out = [
-          "Sure, I can help with that!",
-          "Here's what we offer:",
-          "",
-          menu
-        ].join('\n');
-        qLog.run('out', from, out);
-        return out;
-      }
-    }
+    qSaveBookingState.run({
+      ...newState,
+      phone: from,
+      expires_at: dayjs().add(STATE_EXPIRE_MINUTES, 'minute').toISOString()
+    });
   }
+  
+  let finalReply;
 
-  // --- CHANGE SERVICE (e.g., "change to colouring") ---
-  if (nlu.intent === "change_service") {
-    // ... (this logic is fine, no changes needed)
-    const latest = qLatestConfirmedFor.get(from);
-    if (!latest) {
-      const reply = "I can't find a confirmed booking to change.";
-      qLog.run('out', from, reply);
-      return reply;
-    }
-    const newSvcName = (entities?.new_service || entities?.service || "").trim();
-    if (!newSvcName) {
-      const reply = "Which service would you like instead?";
-      qLog.run('out', from, reply);
-      return reply;
-    }
-    const newSvc = qFindService.get(newSvcName);
-    if (!newSvc) {
-      const reply = `I couldn't find "${newSvcName}". Try a service name from the menu.`;
-      qLog.run('out', from, reply);
-      return reply;
-    }
-    const startISO = dayjs(latest.start_dt).toISOString();
-    const endISO   = dayjs(startISO).add(newSvc.duration_min, "minute").toISOString();
-    const holdUntilISO = dayjs().add(HOLD_MINUTES, "minute").toISOString();
-    const staffOrder = [latest.staff_id, ...db.prepare('SELECT id FROM staff WHERE active=1').all().map(r=>r.id).filter(id=>id!==latest.staff_id)];
-    let held = null;
-    for (const sid of staffOrder) {
-      try {
-        db.transaction(() => {
-          if (qClashActive.get(sid, startISO)) throw new Error('busy');
-          qInsertPending.run(from, sid, newSvc.id, startISO, endISO, holdUntilISO);
-          db.prepare('UPDATE bookings SET reschedule_of=? WHERE id=last_insert_rowid()').run(latest.id);
-        })();
-        held = sid; break;
-      } catch {}
-    }
-    if (!held) {
-      const reply = `I couldn’t find a same-day time for ${newSvc.name}. Try another time?`;
-      qLog.run('out', from, reply);
-      return reply;
-    }
-    const heldStaff = qStfByIdFull.get(held);
-    const reply = `Holding — *${newSvc.name}* with *${heldStaff.name}* at ${dayjs(startISO).format('ddd D MMM, h:mm A')}.\nReply *Confirm* to change your booking.`;
-    qLog.run('out', from, reply);
-    return reply;
+  if (nlu.intent === 'booking' && faqResponse) {
+    finalReply = mainResponse;
+  } else {
+    finalReply = [faqResponse, mainResponse].filter(Boolean).join('\n');
   }
-
-  // --- *** UPDATED: DEFAULT help (The "revolting" message) *** ---
-  const reply = "Sorry, I didn't quite catch that. I can help you book, reschedule, or cancel an appointment.";
-  qLog.run('out', from, reply);
-  return reply;
+  
+  if (!finalReply) {
+    finalReply = "Sorry, I'm not sure how to help you with that.";
+  }
+  
+  qLog.run('out', from, finalReply);
+  return finalReply;
 }
