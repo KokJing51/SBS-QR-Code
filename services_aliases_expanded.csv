@@ -1,0 +1,470 @@
+﻿service_id,alias
+svc_cut_senior_stylist,gunting rambut
+svc_cut_senior_stylist,haircut
+svc_cut_senior_stylist,haircut (senior stylist)
+svc_cut_senior_stylist,potong
+svc_cut_senior_stylist,potong rambut
+svc_cut_senior_stylist,senior stylist
+svc_cut_senior_stylist,trim
+svc_cut_director,director
+svc_cut_director,gunting rambut
+svc_cut_director,haircut
+svc_cut_director,haircut (director)
+svc_cut_director,potong
+svc_cut_director,potong rambut
+svc_cut_director,trim
+svc_cut_senior_director,gunting rambut
+svc_cut_senior_director,haircut
+svc_cut_senior_director,haircut (senior director)
+svc_cut_senior_director,potong
+svc_cut_senior_director,potong rambut
+svc_cut_senior_director,senior director
+svc_cut_senior_director,trim
+svc_cut_exec_director,executive director
+svc_cut_exec_director,gunting rambut
+svc_cut_exec_director,haircut
+svc_cut_exec_director,haircut (executive director)
+svc_cut_exec_director,potong
+svc_cut_exec_director,potong rambut
+svc_cut_exec_director,trim
+svc_cut_creative_director,creative director
+svc_cut_creative_director,gunting rambut
+svc_cut_creative_director,haircut
+svc_cut_creative_director,haircut (creative director)
+svc_cut_creative_director,potong
+svc_cut_creative_director,potong rambut
+svc_cut_creative_director,trim
+svc_cut_children_13_19,children 13â€“19
+svc_cut_children_13_19,gunting rambut
+svc_cut_children_13_19,haircut
+svc_cut_children_13_19,haircut (children 13â€“19)
+svc_cut_children_13_19,potong
+svc_cut_children_13_19,potong rambut
+svc_cut_children_13_19,trim
+svc_cut_children_0_12,children 0â€“12
+svc_cut_children_0_12,gunting rambut
+svc_cut_children_0_12,haircut
+svc_cut_children_0_12,haircut (children 0â€“12)
+svc_cut_children_0_12,potong
+svc_cut_children_0_12,potong rambut
+svc_cut_children_0_12,trim
+svc_fringe_cut,bangs
+svc_fringe_cut,fringe
+svc_fringe_cut,fringe cut
+svc_fringe_cut,poni
+svc_fringe_cut,trim fringe
+svc_wash_blow_short,S
+svc_wash_blow_short,basuh & blow
+svc_wash_blow_short,blow
+svc_wash_blow_short,cuci & blow
+svc_wash_blow_short,cuci rambut
+svc_wash_blow_short,pendek
+svc_wash_blow_short,short
+svc_wash_blow_short,shortâ€”up to collarbone
+svc_wash_blow_short,w/b
+svc_wash_blow_short,wash
+svc_wash_blow_short,wash & blow
+svc_wash_blow_short,wash & blow (shortâ€”up to collarbone)
+svc_wash_blow_short,wash n blow
+svc_wash_blow_short,wb
+svc_wash_blow_long,L
+svc_wash_blow_long,basuh & blow
+svc_wash_blow_long,below
+svc_wash_blow_long,blow
+svc_wash_blow_long,cuci & blow
+svc_wash_blow_long,cuci rambut
+svc_wash_blow_long,long
+svc_wash_blow_long,longâ€”collarbone
+svc_wash_blow_long,panjang
+svc_wash_blow_long,w/b
+svc_wash_blow_long,wash
+svc_wash_blow_long,wash & blow
+svc_wash_blow_long,wash & blow (longâ€”collarbone & below)
+svc_wash_blow_long,wash n blow
+svc_wash_blow_long,wb
+add_straight_iron_curl,add
+add_straight_iron_curl,on
+add_straight_iron_curl,straight iron + curl iron
+add_straight_iron_curl,straight iron + curl iron (add-on)
+add_silky_straight,add
+add_silky_straight,on
+add_silky_straight,silky straight hairstyle
+add_silky_straight,silky straight hairstyle (add-on)
+add_ext_blow_straight,add
+add_ext_blow_straight,blow straight
+add_ext_blow_straight,extensions hair
+add_ext_blow_straight,extensions hair & blow straight (add-on)
+add_ext_blow_straight,on
+add_ext_curl_iron,add
+add_ext_curl_iron,curl iron
+add_ext_curl_iron,extensions hair
+add_ext_curl_iron,extensions hair & curl iron (add-on)
+add_ext_curl_iron,on
+add_blowout_curls,add
+add_blowout_curls,blowout with curls
+add_blowout_curls,blowout with curls (add-on)
+add_blowout_curls,on
+add_extra_long_waist,EL
+add_extra_long_waist,L
+add_extra_long_waist,add
+add_extra_long_waist,ekstra panjang
+add_extra_long_waist,extra long
+add_extra_long_waist,extra long hair
+add_extra_long_waist,extra long hair (waist level) (add-on)
+add_extra_long_waist,long
+add_extra_long_waist,on
+add_extra_long_waist,panjang
+add_extra_long_waist,sangat panjang
+add_extra_long_waist,waist level
+svc_hairstyling_setup,hairstyling
+svc_hairstyling_setup,hairstyling & setup
+svc_hairstyling_setup,setup
+svc_touchup_s,S
+svc_touchup_s,akar
+svc_touchup_s,pendek
+svc_touchup_s,sentuh akar
+svc_touchup_s,short
+svc_touchup_s,touch up
+svc_touchup_s,touch up (short)
+svc_touchup_s,touch up akar
+svc_touchup_m,M
+svc_touchup_m,akar
+svc_touchup_m,medium
+svc_touchup_m,sederhana
+svc_touchup_m,sentuh akar
+svc_touchup_m,touch up
+svc_touchup_m,touch up (medium)
+svc_touchup_m,touch up akar
+svc_touchup_l,L
+svc_touchup_l,akar
+svc_touchup_l,long
+svc_touchup_l,panjang
+svc_touchup_l,sentuh akar
+svc_touchup_l,touch up
+svc_touchup_l,touch up (long)
+svc_touchup_l,touch up akar
+svc_color_short,S
+svc_color_short,color
+svc_color_short,coloring
+svc_color_short,coloring (short)
+svc_color_short,colour
+svc_color_short,dye
+svc_color_short,pendek
+svc_color_short,pewarna rambut
+svc_color_short,short
+svc_color_short,warna
+svc_color_medium,M
+svc_color_medium,color
+svc_color_medium,coloring
+svc_color_medium,coloring (medium)
+svc_color_medium,colour
+svc_color_medium,dye
+svc_color_medium,medium
+svc_color_medium,pewarna rambut
+svc_color_medium,sederhana
+svc_color_medium,warna
+svc_color_long,L
+svc_color_long,color
+svc_color_long,coloring
+svc_color_long,coloring (long)
+svc_color_long,colour
+svc_color_long,dye
+svc_color_long,long
+svc_color_long,panjang
+svc_color_long,pewarna rambut
+svc_color_long,warna
+svc_color_xlong,EL
+svc_color_xlong,L
+svc_color_xlong,color
+svc_color_xlong,coloring
+svc_color_xlong,coloring (extra long)
+svc_color_xlong,colour
+svc_color_xlong,dye
+svc_color_xlong,ekstra panjang
+svc_color_xlong,extra long
+svc_color_xlong,long
+svc_color_xlong,panjang
+svc_color_xlong,pewarna rambut
+svc_color_xlong,sangat panjang
+svc_color_xlong,warna
+svc_highlights_consult,babylights
+svc_highlights_consult,balayage
+svc_highlights_consult,"by consultation, from rm188"
+svc_highlights_consult,highlight
+svc_highlights_consult,highlights
+svc_highlights_consult,"highlights (by consultation, from rm188)"
+svc_special_color_consult,balayage
+svc_special_color_consult,color
+svc_special_color_consult,colour
+svc_special_color_consult,dip dye
+svc_special_color_consult,dye
+svc_special_color_consult,ombre
+svc_special_color_consult,pewarna rambut
+svc_special_color_consult,special color
+svc_special_color_consult,special color (ombre/dip dye/balayage)
+svc_special_color_consult,warna
+add_bleaching_per_length,add
+add_bleaching_per_length,bleach
+add_bleaching_per_length,bleaching
+add_bleaching_per_length,bleaching (add-on per length)
+add_bleaching_per_length,on per length
+add_bleaching_per_length,peluntur rambut
+svc_cold_perm_s,S
+svc_cold_perm_s,cold perm
+svc_cold_perm_s,cold perm (short)
+svc_cold_perm_s,keriting
+svc_cold_perm_s,pendek
+svc_cold_perm_s,perm
+svc_cold_perm_s,short
+svc_cold_perm_m,M
+svc_cold_perm_m,cold perm
+svc_cold_perm_m,cold perm (medium)
+svc_cold_perm_m,keriting
+svc_cold_perm_m,medium
+svc_cold_perm_m,perm
+svc_cold_perm_m,sederhana
+svc_cold_perm_l,L
+svc_cold_perm_l,cold perm
+svc_cold_perm_l,cold perm (long)
+svc_cold_perm_l,keriting
+svc_cold_perm_l,long
+svc_cold_perm_l,panjang
+svc_cold_perm_l,perm
+svc_cold_perm_el,EL
+svc_cold_perm_el,L
+svc_cold_perm_el,cold perm
+svc_cold_perm_el,cold perm (extra long)
+svc_cold_perm_el,ekstra panjang
+svc_cold_perm_el,extra long
+svc_cold_perm_el,keriting
+svc_cold_perm_el,long
+svc_cold_perm_el,panjang
+svc_cold_perm_el,perm
+svc_cold_perm_el,sangat panjang
+svc_digital_perm,digital perm
+svc_digital_perm,keriting
+svc_digital_perm,keriting digital
+svc_digital_perm,perm
+svc_digital_perm,perm digital
+svc_root_perm,akar
+svc_root_perm,keriting
+svc_root_perm,perm
+svc_root_perm,root
+svc_root_perm,root perm
+svc_down_perm_part,down perm â€“ part
+svc_down_perm_part,keriting
+svc_down_perm_part,perm
+svc_down_perm_full,down perm â€“ full
+svc_down_perm_full,keriting
+svc_down_perm_full,perm
+svc_fringe_perm,bangs
+svc_fringe_perm,fringe
+svc_fringe_perm,fringe perm
+svc_fringe_perm,keriting
+svc_fringe_perm,perm
+svc_fringe_perm,poni
+svc_fringe_perm,trim fringe
+svc_fringe_perm_wb,bangs
+svc_fringe_perm_wb,blow included
+svc_fringe_perm_wb,fringe
+svc_fringe_perm_wb,fringe perm
+svc_fringe_perm_wb,fringe perm (wash/blow included)
+svc_fringe_perm_wb,keriting
+svc_fringe_perm_wb,perm
+svc_fringe_perm_wb,poni
+svc_fringe_perm_wb,trim fringe
+svc_fringe_perm_wb,w/b
+svc_fringe_perm_wb,wash
+svc_fringe_perm_wb,wash & blow
+svc_fringe_perm_wb,wash n blow
+svc_fringe_perm_wb,wb
+svc_special_perm_consult,by consultation
+svc_special_perm_consult,keriting
+svc_special_perm_consult,perm
+svc_special_perm_consult,special perm
+svc_special_perm_consult,special perm (by consultation)
+svc_tokio_frizz_s,S
+svc_tokio_frizz_s,pendek
+svc_tokio_frizz_s,short
+svc_tokio_frizz_s,tokio inkarami frizz control
+svc_tokio_frizz_s,tokio inkarami frizz control (short)
+svc_tokio_frizz_m,M
+svc_tokio_frizz_m,medium
+svc_tokio_frizz_m,sederhana
+svc_tokio_frizz_m,tokio inkarami frizz control
+svc_tokio_frizz_m,tokio inkarami frizz control (medium)
+svc_tokio_frizz_l,L
+svc_tokio_frizz_l,long
+svc_tokio_frizz_l,panjang
+svc_tokio_frizz_l,tokio inkarami frizz control
+svc_tokio_frizz_l,tokio inkarami frizz control (long)
+svc_fringe_rebond,bangs
+svc_fringe_rebond,fringe
+svc_fringe_rebond,fringe rebonding
+svc_fringe_rebond,meluruskan
+svc_fringe_rebond,meluruskan rambut
+svc_fringe_rebond,mlrs
+svc_fringe_rebond,poni
+svc_fringe_rebond,rebond
+svc_fringe_rebond,trim fringe
+svc_rebond_touchup_m,M
+svc_rebond_touchup_m,akar
+svc_rebond_touchup_m,medium
+svc_rebond_touchup_m,meluruskan
+svc_rebond_touchup_m,meluruskan rambut
+svc_rebond_touchup_m,mlrs
+svc_rebond_touchup_m,rebond
+svc_rebond_touchup_m,rebonding touch up
+svc_rebond_touchup_m,rebonding touch up (medium)
+svc_rebond_touchup_m,sederhana
+svc_rebond_touchup_m,sentuh akar
+svc_rebond_touchup_m,touch up
+svc_rebond_touchup_m,touch up akar
+svc_rebond_touchup_l,L
+svc_rebond_touchup_l,akar
+svc_rebond_touchup_l,long
+svc_rebond_touchup_l,meluruskan
+svc_rebond_touchup_l,meluruskan rambut
+svc_rebond_touchup_l,mlrs
+svc_rebond_touchup_l,panjang
+svc_rebond_touchup_l,rebond
+svc_rebond_touchup_l,rebonding touch up
+svc_rebond_touchup_l,rebonding touch up (long)
+svc_rebond_touchup_l,sentuh akar
+svc_rebond_touchup_l,touch up
+svc_rebond_touchup_l,touch up akar
+svc_rebond_s,S
+svc_rebond_s,meluruskan
+svc_rebond_s,meluruskan rambut
+svc_rebond_s,mlrs
+svc_rebond_s,pendek
+svc_rebond_s,rebond
+svc_rebond_s,rebonding
+svc_rebond_s,rebonding (short)
+svc_rebond_s,short
+svc_rebond_m,M
+svc_rebond_m,medium
+svc_rebond_m,meluruskan
+svc_rebond_m,meluruskan rambut
+svc_rebond_m,mlrs
+svc_rebond_m,rebond
+svc_rebond_m,rebonding
+svc_rebond_m,rebonding (medium)
+svc_rebond_m,sederhana
+svc_rebond_l,L
+svc_rebond_l,long
+svc_rebond_l,meluruskan
+svc_rebond_l,meluruskan rambut
+svc_rebond_l,mlrs
+svc_rebond_l,panjang
+svc_rebond_l,rebond
+svc_rebond_l,rebonding
+svc_rebond_l,rebonding (long)
+svc_headspa_tokio,spa rambut
+svc_headspa_tokio,tokio inkarami head spa
+svc_headspa_aveda,aveda botanical scalp
+svc_headspa_aveda,aveda botanical scalp (branch-specific)
+svc_headspa_aveda,branch
+svc_headspa_aveda,kulit kepala
+svc_headspa_aveda,rawatan scalp
+svc_headspa_aveda,specific
+svc_headspa_milbon,branch
+svc_headspa_milbon,global milbon head spa
+svc_headspa_milbon,global milbon head spa (branch-specific)
+svc_headspa_milbon,spa rambut
+svc_headspa_milbon,specific
+svc_treat_pjoli_hydrating,pjoli hydrating treatment
+svc_treat_pjoli_hydrating,rawatan
+svc_treat_pjoli_hydrating,rawatan rambut
+svc_treat_pjoli_hydrating,repair rambut
+svc_treat_advante,advante treatment
+svc_treat_advante,rawatan
+svc_treat_advante,rawatan rambut
+svc_treat_advante,repair rambut
+svc_treat_ultra_sonic,rawatan
+svc_treat_ultra_sonic,rawatan rambut
+svc_treat_ultra_sonic,repair rambut
+svc_treat_ultra_sonic,ultra sonic treatment
+add_olaplex,add
+add_olaplex,olaplex
+add_olaplex,olaplex (add-on service)
+add_olaplex,on service
+svc_treat_tokio,rawatan
+svc_treat_tokio,rawatan rambut
+svc_treat_tokio,repair rambut
+svc_treat_tokio,tokio inkarami treatment
+svc_treat_tokio_limited,tokio inkarami limited
+svc_treat_milbon_smooth,global milbon smooth treatment
+svc_treat_milbon_smooth,rawatan
+svc_treat_milbon_smooth,rawatan rambut
+svc_treat_milbon_smooth,repair rambut
+svc_treat_milbon_color_preserve,color
+svc_treat_milbon_color_preserve,colour
+svc_treat_milbon_color_preserve,dye
+svc_treat_milbon_color_preserve,global milbon color preserve treatment
+svc_treat_milbon_color_preserve,pewarna rambut
+svc_treat_milbon_color_preserve,rawatan
+svc_treat_milbon_color_preserve,rawatan rambut
+svc_treat_milbon_color_preserve,repair rambut
+svc_treat_milbon_color_preserve,warna
+svc_treat_milbon_repair,global milbon repair treatment
+svc_treat_milbon_repair,rawatan
+svc_treat_milbon_repair,rawatan rambut
+svc_treat_milbon_repair,repair rambut
+svc_keratin_s,S
+svc_keratin_s,kamishitsu
+svc_keratin_s,kamishitsukaizen
+svc_keratin_s,keratin
+svc_keratin_s,keratin treatment
+svc_keratin_s,keratin treatment (short)
+svc_keratin_s,pendek
+svc_keratin_s,rawatan
+svc_keratin_s,rawatan keratin
+svc_keratin_s,rawatan rambut
+svc_keratin_s,repair rambut
+svc_keratin_s,short
+svc_keratin_m,M
+svc_keratin_m,kamishitsu
+svc_keratin_m,kamishitsukaizen
+svc_keratin_m,keratin
+svc_keratin_m,keratin treatment
+svc_keratin_m,keratin treatment (medium)
+svc_keratin_m,medium
+svc_keratin_m,rawatan
+svc_keratin_m,rawatan keratin
+svc_keratin_m,rawatan rambut
+svc_keratin_m,repair rambut
+svc_keratin_m,sederhana
+svc_keratin_l,L
+svc_keratin_l,kamishitsu
+svc_keratin_l,kamishitsukaizen
+svc_keratin_l,keratin
+svc_keratin_l,keratin treatment
+svc_keratin_l,keratin treatment (long)
+svc_keratin_l,long
+svc_keratin_l,panjang
+svc_keratin_l,rawatan
+svc_keratin_l,rawatan keratin
+svc_keratin_l,rawatan rambut
+svc_keratin_l,repair rambut
+svc_keratin_el,EL
+svc_keratin_el,L
+svc_keratin_el,ekstra panjang
+svc_keratin_el,extra long
+svc_keratin_el,kamishitsu
+svc_keratin_el,kamishitsukaizen
+svc_keratin_el,keratin
+svc_keratin_el,keratin treatment
+svc_keratin_el,keratin treatment (extra long)
+svc_keratin_el,long
+svc_keratin_el,panjang
+svc_keratin_el,rawatan
+svc_keratin_el,rawatan keratin
+svc_keratin_el,rawatan rambut
+svc_keratin_el,repair rambut
+svc_keratin_el,sangat panjang
+svc_scalp_shiseido_fuente,shiseido sublimic fuente forte with tansan
+svc_scalp_shiseido_adeno,kulit kepala
+svc_scalp_shiseido_adeno,rawatan scalp
+svc_scalp_shiseido_adeno,shiseido adenovital scalp
+svc_scalp_tansan_wash,tansan sparkling hair wash

@@ -1,0 +1,67 @@
+﻿service_id,name,aliases,price_rm,duration_min,category,notes
+svc_cut_senior_stylist,Haircut (Senior Stylist),haircut;cut rambut;potong rambut;wash blow finish,76,45,haircut,Includes wash & blow
+svc_cut_director,Haircut (Director),director cut;haircut director,98,50,haircut,Includes wash & blow
+svc_cut_senior_director,Haircut (Senior Director),senior director cut;haircut senior director,138,55,haircut,Includes wash & blow
+svc_cut_exec_director,Haircut (Executive Director),executive director cut,168,60,haircut,Includes wash & blow
+svc_cut_creative_director,Haircut (Creative Director),creative director cut,188,60,haircut,Includes wash & blow
+svc_cut_children_13_19,Haircut (Children 13â€“19),teen cut;pelajar;remaja,-30,45,haircut_discount,30% OFF from selected stylist tiers
+svc_cut_children_0_12,Haircut (Children 0â€“12),kid cut;kanak-kanak,-50,30,haircut_discount,50% OFF from selected stylist tiers
+svc_fringe_cut,Fringe Cut,trim fringe;cut bang;potong poni,10,10,haircut,RM10 (with spending in 6 months) / RM20 (without)
+svc_wash_blow_short,Wash & Blow (Shortâ€”Up to collarbone),wash and blow;cuci & blow;blowdry pendek,55,30,styling,
+svc_wash_blow_long,Wash & Blow (Longâ€”Collarbone & below),wash blow long;cuci & blow panjang,65,40,styling,
+add_straight_iron_curl,Straight Iron + Curl Iron (Add-on),iron;curl;catok,15,15,add_on,Add-on for styling
+add_silky_straight,Silky Straight Hairstyle (Add-on),silky straight,20,20,add_on,Add-on for styling
+add_ext_blow_straight,Extensions Hair & Blow Straight (Add-on),extension blow straight,15,15,add_on,Add-on for styling
+add_ext_curl_iron,Extensions Hair & Curl Iron (Add-on),extension curl iron,20,20,add_on,Add-on for styling
+add_blowout_curls,Blowout with Curls (Add-on),blowout curls,20,20,add_on,Add-on for styling
+add_extra_long_waist,Extra Long Hair (Waist Level) (Add-on),extra long add;EL add,10,0,add_on,Additional charge for waist length
+svc_hairstyling_setup,Hairstyling & Setup,event styling;updo,120,60,styling,From RM120
+svc_touchup_s,Touch Up (Short),touch up S;akar pendek,168,75,coloring,Plant-based color (P) RM178
+svc_touchup_m,Touch Up (Medium),touch up M;akar sederhana,188,90,coloring,Plant-based color (P) RM198
+svc_touchup_l,Touch Up (Long),touch up L;akar panjang,218,105,coloring,Plant-based color (P) RM218
+svc_color_short,Coloring (Short),dye short;warna pendek,248,90,coloring,(P) same price listed
+svc_color_medium,Coloring (Medium),dye medium;warna sederhana,298,105,coloring,(P) same price listed
+svc_color_long,Coloring (Long),dye long;warna panjang,348,120,coloring,(P) same price listed
+svc_color_xlong,Coloring (Extra Long),dye EL;warna extra panjang,398,135,coloring,(P) same price listed
+svc_highlights_consult,"Highlights (by consultation, from RM188)",balayage;babylights;highlight,188,120,coloring,Price varies by length/technique
+svc_special_color_consult,Special Color (Ombre/Dip Dye/Balayage),special colour;ombre;dip dye;balayage,0,15,coloring_consult,By consultation
+add_bleaching_per_length,Bleaching (Add-on per length),bleach;bleaching,40,60,add_on,Additional RM40 per length on top of color prices
+svc_cold_perm_s,Cold Perm (Short),cold perm S;perm pendek,268,120,texture,
+svc_cold_perm_m,Cold Perm (Medium),cold perm M;perm medium,288,135,texture,
+svc_cold_perm_l,Cold Perm (Long),cold perm L;perm panjang,318,150,texture,
+svc_cold_perm_el,Cold Perm (Extra Long),cold perm EL;perm extra panjang,368,165,texture,
+svc_digital_perm,Digital Perm,perm digital,468,170,texture,
+svc_root_perm,Root Perm,perm akar,188,90,texture,
+svc_down_perm_part,Down Perm â€“ Part,down perm part,68,40,texture,
+svc_down_perm_full,Down Perm â€“ Full,down perm full,128,60,texture,
+svc_fringe_perm,Fringe Perm,perm fringe;perm poni,128,45,texture,
+svc_fringe_perm_wb,Fringe Perm (Wash/Blow Included),fringe perm w/b,198,60,texture,Includes wash & blow
+svc_special_perm_consult,Special Perm (by consultation),special perm,0,15,texture_consult,By consultation
+svc_tokio_frizz_s,Tokio Inkarami Frizz Control (Short),tokio frizz S,598,150,treatment_texture,
+svc_tokio_frizz_m,Tokio Inkarami Frizz Control (Medium),tokio frizz M,658,165,treatment_texture,
+svc_tokio_frizz_l,Tokio Inkarami Frizz Control (Long),tokio frizz L,708,180,treatment_texture,
+svc_fringe_rebond,Fringe Rebonding,rebond fringe,128,60,texture,
+svc_rebond_touchup_m,Rebonding Touch Up (Medium),rebond touch up M,348,120,texture,
+svc_rebond_touchup_l,Rebonding Touch Up (Long),rebond touch up L,408,135,texture,
+svc_rebond_s,Rebonding (Short),rebonding S;meluruskan pendek,468,150,texture,
+svc_rebond_m,Rebonding (Medium),rebonding M;meluruskan sederhana,528,165,texture,
+svc_rebond_l,Rebonding (Long),rebonding L;meluruskan panjang,578,180,texture,
+svc_headspa_tokio,Tokio Inkarami Head Spa,head spa;spa rambut,388,60,spa,
+svc_headspa_aveda,Aveda Botanical Scalp (branch-specific),aveda scalp;botanical scalp,388,60,spa,Branch availability may vary
+svc_headspa_milbon,Global Milbon Head Spa (branch-specific),milbon head spa,388,60,spa,Branch availability may vary
+svc_treat_pjoli_hydrating,PJOLI Hydrating Treatment,hydrating treatment,198,60,treatment,Selected branches only
+svc_treat_advante,Advante Treatment,advante,218,60,treatment,
+svc_treat_ultra_sonic,Ultra Sonic Treatment,ultrasonic treatment,318,75,treatment,
+add_olaplex,Olaplex (Add-on Service),olaplex add on,98,0,add_on,Add-on to coloring/bleach
+svc_treat_tokio,Tokio Inkarami Treatment,tokio inkarami treatment,368,75,treatment,
+svc_treat_tokio_limited,Tokio Inkarami Limited,tokio limited,468,90,treatment,
+svc_treat_milbon_smooth,Global Milbon Smooth Treatment,milbon smooth,228,60,treatment,Branch-specific
+svc_treat_milbon_color_preserve,Global Milbon Color Preserve Treatment,milbon color preserve,288,60,treatment,Branch-specific
+svc_treat_milbon_repair,Global Milbon Repair Treatment,milbon repair,328,75,treatment,Branch-specific
+svc_keratin_s,Keratin Treatment (Short),keratin short;kamishitsukaizen S,368,120,treatment,
+svc_keratin_m,Keratin Treatment (Medium),keratin medium;kamishitsukaizen M,468,135,treatment,
+svc_keratin_l,Keratin Treatment (Long),keratin long;kamishitsukaizen L,618,150,treatment,
+svc_keratin_el,Keratin Treatment (Extra Long),keratin EL;kamishitsukaizen EL,818,165,treatment,
+svc_scalp_shiseido_fuente,Shiseido Sublimic Fuente Forte with Tansan,fuente forte;scalp care shiseido,198,60,scalp,
+svc_scalp_shiseido_adeno,Shiseido Adenovital Scalp,adenovital scalp;shiseido scalp,288,60,scalp,
+svc_scalp_tansan_wash,Tansan Sparkling Hair Wash,tansan wash;sparkling wash,68,20,scalp,

@@ -1,0 +1,49 @@
+﻿faq_id,question,answer
+faq_walkins,Do you accept walk-ins?,"Yes, before 5 PM if slots are available."
+faq_booking_advance,How far in advance can I book?,Up to 30 days in advance via WhatsApp or our dashboard.
+faq_booking_change,Can I change my booking time?,Yes—please do so at least 24 hours in advance.
+faq_same_day,Do you accept same-day bookings?,Yes if slots are free. Message us to check.
+faq_group_booking,Can I book for a group?,"Yes. For 3 or more people, please book at least 48 hours ahead."
+faq_choose_stylist,Can I choose my stylist?,"Yes—select a stylist when booking, subject to availability."
+faq_reminders,Do you send appointment reminders?,Yes—automated reminders are sent before your appointment.
+faq_confirmation,Do I receive a booking confirmation?,Yes—WhatsApp confirmation is sent once your slot is secured.
+faq_language,Do you support multiple languages?,Yes—messages in English or BM are welcome.
+faq_home_service,Do you offer home service?,Not at this time; services are performed at the SS15 branch.
+faq_reservation_hold,How long is a tentative reservation held?,Up to 15 minutes pending deposit or confirmation.
+faq_contact,How can I contact the salon?,Via WhatsApp during business hours.
+faq_service_menu,Where can I see your services?,View our Services list or ask us here.
+faq_price_range,What is the price range?,Most services are RM40–RM700 depending on service and hair length.
+faq_length_guide,What counts as Short/Medium/Long/Extra Long?,S: ear–jaw; M: jaw–collarbone; L: collarbone–chest; EL: chest and below.
+faq_duration,How long do services take?,Haircut 30–60 min; colour 90–150 min; keratin/rebonding 120–180 min.
+faq_consultation,Do you offer consultations?,Yes—free quick chat; in-salon consults by appointment.
+faq_color_correction,Do you do colour correction?,Yes—via consultation; may require multiple sessions.
+faq_bleach_safety,Is bleaching safe for my hair?,We assess hair health first and discuss risks and aftercare.
+faq_keratin_aftercare,Keratin aftercare?,Use sulphate-free shampoo; avoid tying hair for 48 hours.
+faq_perm_aftercare,Perm aftercare?,Avoid washing for 48 hours; use curl-safe products.
+faq_scalp_sensitive,What if I have a sensitive scalp?,Tell us beforehand; we can adjust products or recommend treatments.
+faq_use_own_products,Can I bring my own products?,Using your own products is subject to stylist approval.
+faq_products_sale,Do you sell hair products?,Yes—ask us for available brands and recommendations.
+faq_payment_methods,What payment methods are accepted?,"Cash, debit/credit cards, and e-wallets (TnG/GrabPay)."
+faq_deposit,Do I need a deposit?,Major services may require a RM50 deposit to secure the slot.
+faq_installments,Do you offer installments?,No—payment is due upon completion of service.
+faq_student_discount,Is there a student discount?,Yes—10% off Monday–Thursday with valid student ID.
+faq_loyalty,Do you have a loyalty program?,Seasonal loyalty points or packages may be available; ask us.
+faq_invoice,Can I get an invoice?,Yes—e-receipts are available upon request.
+faq_package,Do you have service packages?,Yes—packages are offered seasonally and have expiry dates.
+faq_refund,Do you offer refunds?,Services are non-refundable; adjustments within 3 days with the same stylist.
+faq_price_by_stylist,Does price vary by stylist?,Prices may vary by stylist experience level and hair length.
+faq_tips,Do you accept tips?,Tips are appreciated but not required.
+faq_opening_hours,What are your opening hours?,Tue–Sat 9 AM–7 PM; Sun 10 AM–5 PM; Mon closed.
+faq_public_holidays,Are you open on public holidays?,Hours may vary; please check with us in advance.
+faq_peak_times,When are the busiest times?,Weekends and evenings—please book early to secure a slot.
+faq_last_appointment,What’s the last appointment time?,Varies by service; typically 60–120 minutes before closing.
+faq_rain_blackout,What if there’s heavy rain or blackout?,We may reschedule for safety; affected clients get priority.
+faq_delay_policy,What if the stylist is delayed?,We’ll inform you and offer the next available slot or another stylist.
+faq_accessibility,Is the salon wheelchair accessible?,Yes—ground-floor access with a portable ramp on request.
+faq_lift,Is there a lift?,Yes—via the building lobby; assistance available on request.
+faq_parking,Is parking available?,Limited front parking; nearby paid parking around RM2/hour.
+faq_wifi,Is Wi?Fi available?,Yes—complimentary Wi?Fi is available.
+faq_beverages,Do you offer drinks?,Complimentary water/tea is available for waiting clients.
+faq_toilet,Is there a restroom?,Yes—restrooms are available for clients.
+faq_prayer_space,Is there a prayer space?,A small space can be arranged on request (subject to availability).
+faq_pets,Are pets allowed?,Only service animals are allowed for hygiene and safety.

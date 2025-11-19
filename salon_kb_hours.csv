@@ -1,0 +1,8 @@
+﻿hours_id,branch,day_of_week,open_time,close_time
+ss15_tue,SS15,Tue,9:00,19:00
+ss15_wed,SS15,Wed,9:00,19:00
+ss15_thu,SS15,Thu,9:00,19:00
+ss15_fri,SS15,Fri,9:00,19:00
+ss15_sat,SS15,Sat,9:00,19:00
+ss15_sun,SS15,Sun,10:00,17:00
+ss15_mon,SS15,Mon,CLOSED,CLOSED

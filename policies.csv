@@ -1,0 +1,96 @@
+﻿policy_id,title,text,category,scope
+pol_cancel_24h,24h Cancellation,Please cancel at least 24 hours before your appointment to avoid charges.,cancellation,all
+pol_cancel_48h_major,48h Cancellation (Major),"Colouring, rebonding, and keratin bookings require 48 hours’ notice to cancel.",cancellation,"coloring,rebonding,keratin"
+pol_cancel_same_day,Same-day Cancellation,Same-day cancellations may incur higher fees due to the lost slot.,cancellation,all
+pol_no_show,No-Show,No-shows are charged 100% or deposit forfeited.,no_show,all
+pol_reschedule_24h,Reschedule Window,Please reschedule at least 24 hours in advance to avoid fees.,reschedule,all
+pol_reschedule_limit,Reschedule Limit,A booking can be rescheduled once; further changes require a new booking.,reschedule,all
+pol_late_10,Late Arrival (10 min),10-minute grace period; we’ll do our best to complete the service.,lateness,all
+pol_late_15,Late Arrival (15 min),"15-minute grace period; after that, service may be shortened or forfeited.",lateness,all
+pol_deposit_rm50,Deposit for Major Services,RM50 deposit may be required to secure selected services or peak times.,deposit,all
+pol_deposit_forfeit,Deposit Forfeiture,Deposits are forfeited for no-shows or cancellations within the notice window.,deposit,all
+pol_payment_due,Payment Due,Payment is due upon completion of service.,payment,all
+pol_installments,Installments,Installment or pay-later options are not available.,payment,all
+pol_refund_services,Service Refunds,Services are non-refundable; adjustments within 3 days with the same stylist.,refund,all
+pol_refund_products_7d,Product Returns,Unopened products can be returned within 7 days with receipt. Restocking fee may apply.,refund,all
+pol_redo_3d,Service Redo,Complimentary adjustment within 3 days for execution issues (not a style change).,redo,all
+pol_privacy_data,Privacy,Client data is securely stored and not shared outside the salon.,privacy,all
+pol_access_wheelchair,Wheelchair Access,Ground-floor access; a portable ramp is available on request.,accessibility,SS15
+pol_lift,Lift Availability,Lift via the building lobby; please ask if you need assistance.,accessibility,SS15
+pol_parking,Parking,Limited front parking; nearby paid parking available (~RM2/hour).,facility,SS15
+pol_pets,Pet Policy,Only service animals are allowed inside the salon.,facility,all
+pol_wifi,Wi?Fi & Beverages,Complimentary Wi?Fi and water/tea are available.,facility,SS15
+pol_food_drink,Food & Drink,Please consume outside food and drink in the waiting area only.,facility,SS15
+pol_smoking,No Smoking/Vaping,Smoking and vaping are not permitted inside the salon.,facility,all
+pol_cancel_haircut_24h,Haircut Cancellation (24h),Please cancel haircut at least 24 hours in advance to avoid charges.,cancellation,haircut
+pol_cancel_haircut_same_day,Haircut Same-day Cancellation,Same-day cancellation for haircut may incur a higher fee.,cancellation,haircut
+pol_reschedule_haircut_24h,Haircut Reschedule (24h),Please reschedule haircut at least 24 hours before your appointment.,reschedule,haircut
+pol_late_haircut_15,Late for haircut (15 min),Arriving more than 15 minutes late for haircut may shorten or forfeit the service.,lateness,haircut
+pol_cancel_coloring_24h,Coloring Cancellation (24h),Please cancel coloring at least 24 hours in advance to avoid charges.,cancellation,coloring
+pol_cancel_coloring_same_day,Coloring Same-day Cancellation,Same-day cancellation for coloring may incur a higher fee.,cancellation,coloring
+pol_reschedule_coloring_24h,Coloring Reschedule (24h),Please reschedule coloring at least 24 hours before your appointment.,reschedule,coloring
+pol_late_coloring_15,Late for coloring (15 min),Arriving more than 15 minutes late for coloring may shorten or forfeit the service.,lateness,coloring
+pol_cancel_rebonding_24h,Rebonding Cancellation (24h),Please cancel rebonding at least 24 hours in advance to avoid charges.,cancellation,rebonding
+pol_cancel_rebonding_same_day,Rebonding Same-day Cancellation,Same-day cancellation for rebonding may incur a higher fee.,cancellation,rebonding
+pol_reschedule_rebonding_24h,Rebonding Reschedule (24h),Please reschedule rebonding at least 24 hours before your appointment.,reschedule,rebonding
+pol_late_rebonding_15,Late for rebonding (15 min),Arriving more than 15 minutes late for rebonding may shorten or forfeit the service.,lateness,rebonding
+pol_cancel_keratin_24h,Keratin Cancellation (24h),Please cancel keratin at least 24 hours in advance to avoid charges.,cancellation,keratin
+pol_cancel_keratin_same_day,Keratin Same-day Cancellation,Same-day cancellation for keratin may incur a higher fee.,cancellation,keratin
+pol_reschedule_keratin_24h,Keratin Reschedule (24h),Please reschedule keratin at least 24 hours before your appointment.,reschedule,keratin
+pol_late_keratin_15,Late for keratin (15 min),Arriving more than 15 minutes late for keratin may shorten or forfeit the service.,lateness,keratin
+pol_cancel_perm_24h,Perm Cancellation (24h),Please cancel perm at least 24 hours in advance to avoid charges.,cancellation,perm
+pol_cancel_perm_same_day,Perm Same-day Cancellation,Same-day cancellation for perm may incur a higher fee.,cancellation,perm
+pol_reschedule_perm_24h,Perm Reschedule (24h),Please reschedule perm at least 24 hours before your appointment.,reschedule,perm
+pol_late_perm_15,Late for perm (15 min),Arriving more than 15 minutes late for perm may shorten or forfeit the service.,lateness,perm
+pol_cancel_treatment_24h,Treatment Cancellation (24h),Please cancel treatment at least 24 hours in advance to avoid charges.,cancellation,treatment
+pol_cancel_treatment_same_day,Treatment Same-day Cancellation,Same-day cancellation for treatment may incur a higher fee.,cancellation,treatment
+pol_reschedule_treatment_24h,Treatment Reschedule (24h),Please reschedule treatment at least 24 hours before your appointment.,reschedule,treatment
+pol_late_treatment_15,Late for treatment (15 min),Arriving more than 15 minutes late for treatment may shorten or forfeit the service.,lateness,treatment
+pol_cancel_scalp_24h,Scalp Cancellation (24h),Please cancel scalp at least 24 hours in advance to avoid charges.,cancellation,scalp
+pol_cancel_scalp_same_day,Scalp Same-day Cancellation,Same-day cancellation for scalp may incur a higher fee.,cancellation,scalp
+pol_reschedule_scalp_24h,Scalp Reschedule (24h),Please reschedule scalp at least 24 hours before your appointment.,reschedule,scalp
+pol_late_scalp_15,Late for scalp (15 min),Arriving more than 15 minutes late for scalp may shorten or forfeit the service.,lateness,scalp
+pol_cancel_head spa_24h,Head Spa Cancellation (24h),Please cancel head spa at least 24 hours in advance to avoid charges.,cancellation,head spa
+pol_cancel_head spa_same_day,Head Spa Same-day Cancellation,Same-day cancellation for head spa may incur a higher fee.,cancellation,head spa
+pol_reschedule_head spa_24h,Head Spa Reschedule (24h),Please reschedule head spa at least 24 hours before your appointment.,reschedule,head spa
+pol_late_head spa_15,Late for head spa (15 min),Arriving more than 15 minutes late for head spa may shorten or forfeit the service.,lateness,head spa
+pol_cancel_highlights_24h,Highlights Cancellation (24h),Please cancel highlights at least 24 hours in advance to avoid charges.,cancellation,highlights
+pol_cancel_highlights_same_day,Highlights Same-day Cancellation,Same-day cancellation for highlights may incur a higher fee.,cancellation,highlights
+pol_reschedule_highlights_24h,Highlights Reschedule (24h),Please reschedule highlights at least 24 hours before your appointment.,reschedule,highlights
+pol_late_highlights_15,Late for highlights (15 min),Arriving more than 15 minutes late for highlights may shorten or forfeit the service.,lateness,highlights
+pol_cancel_bleaching_24h,Bleaching Cancellation (24h),Please cancel bleaching at least 24 hours in advance to avoid charges.,cancellation,bleaching
+pol_cancel_bleaching_same_day,Bleaching Same-day Cancellation,Same-day cancellation for bleaching may incur a higher fee.,cancellation,bleaching
+pol_reschedule_bleaching_24h,Bleaching Reschedule (24h),Please reschedule bleaching at least 24 hours before your appointment.,reschedule,bleaching
+pol_late_bleaching_15,Late for bleaching (15 min),Arriving more than 15 minutes late for bleaching may shorten or forfeit the service.,lateness,bleaching
+pol_cancel_extensions_24h,Extensions Cancellation (24h),Please cancel extensions at least 24 hours in advance to avoid charges.,cancellation,extensions
+pol_cancel_extensions_same_day,Extensions Same-day Cancellation,Same-day cancellation for extensions may incur a higher fee.,cancellation,extensions
+pol_reschedule_extensions_24h,Extensions Reschedule (24h),Please reschedule extensions at least 24 hours before your appointment.,reschedule,extensions
+pol_late_extensions_15,Late for extensions (15 min),Arriving more than 15 minutes late for extensions may shorten or forfeit the service.,lateness,extensions
+pol_deposit_coloring,Deposit for Coloring,A deposit is required to secure a coloring appointment.,deposit,coloring
+pol_deposit_rebonding,Deposit for Rebonding,A deposit is required to secure a rebonding appointment.,deposit,rebonding
+pol_deposit_keratin,Deposit for Keratin,A deposit is required to secure a keratin appointment.,deposit,keratin
+pol_deposit_highlights,Deposit for Highlights,A deposit is required to secure a highlights appointment.,deposit,highlights
+pol_deposit_bleaching,Deposit for Bleaching,A deposit is required to secure a bleaching appointment.,deposit,bleaching
+pol_deposit_extensions,Deposit for Extensions,A deposit is required to secure a extensions appointment.,deposit,extensions
+pol_length_surcharge,Length Surcharge,Extra product/time surcharge may apply for long or extra-long hair.,extra_charge,"coloring,treatment,keratin"
+pol_thick_hair,Thick Hair Surcharge,Additional fee may apply for very dense hair requiring extra product/time.,extra_charge,"coloring,treatment,keratin"
+pol_detangle,Detangling Time,Detangling beyond 10 minutes may incur an additional fee.,extra_charge,all
+pol_package_expiry,Package Expiry,Packages must be used within 6 months unless stated otherwise.,package,all
+pol_package_nontransfer,Package Non-transferable,Packages/memberships are non-transferable and non-refundable.,package,all
+pol_promo_stack,Promo Combining,Promotions and discounts cannot be combined unless explicitly stated.,promo,all
+pol_student_days,Student Discount Days,Student discount (10%) applies Monday–Thursday with valid student ID.,promo,all
+pol_health_unwell,Unwell Policy,"If you feel unwell, please reschedule for everyone’s safety.",safety,all
+pol_mask_optional,Mask Policy,Masks are optional; please inform us if you prefer your stylist to wear one.,safety,all
+pol_allergy_disclosure,Allergy Disclosure,Please inform us of any known allergies before the service begins.,safety,all
+pol_photo_consent,Photo/Video Consent,We will always ask before taking or posting photos/videos of your hair.,privacy,all
+pol_complaints,Complaints Handling,Please contact the salon lead within 48 hours for service concerns.,communication,all
+pol_stylist_change,Stylist Substitution,A different stylist of similar level may be assigned if your stylist is unavailable.,operations,all
+pol_rain_blackout,Weather/Blackout Contingency,Appointments may be rescheduled for safety; affected clients get priority.,operations,all
+pol_cleanliness,Cleanliness & Hygiene,Tools are disinfected regularly; capes and towels are replaced between clients.,safety,all
+pol_chat_etiquette,Chat Etiquette,Please keep messages concise during peak hours; we reply as soon as possible.,communication,all
+pol_data_access,Data Access Control,Only authorized staff can access client records using traceable logins.,privacy,all
+pol_stylist_preferences,Stylist Preferences,We try to honor stylist requests; availability may vary.,operations,all
+pol_redo_exclusions,Redo Exclusions,Redos cover execution issues only; not changes of mind or new styles.,redo,all
+pol_service_refusal,Right to Refuse Service,"We may refuse service in cases of aggressive behavior, intoxication, or unsafe conditions.",conduct,all
+pol_chemical_timeout,Chemical Timing Safety,Processing times are set by stylist assessment for hair health and safety.,safety,all
+pol_late_payment,Late Payment,Please complete payment before leaving the salon.,payment,all
